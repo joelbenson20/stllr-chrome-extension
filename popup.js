@@ -1,21 +1,29 @@
-const FLOAT_API_URL = 'http://127.0.0.1:8000/api';
-const feedWindow = document.getElementById('feedWindow');
-
-async function getUrl() {
+async function getCurrentTabUrl() {
   let queryOptions = { active: true, currentWindow: true };
-  let [tab] = await chrome.tabs.query(queryOptions); 
+  let [tab] = await chrome.tabs.query(queryOptions);
   return tab.url;
 }
 
-getUrl().then((url) => {
-  document.getElementById('urlDisplay').innerText = url;
-});
+async function init() {
 
-fetch(`${FLOAT_API_URL}/index`)
-      .then(response => {
+  const FLOAT_API_URL = 'http://127.0.0.1:8000/api';
+  const extensionWindow = document.getElementById('extensionWindow');
+  const webpageUrl = await getCurrentTabUrl();
+
+  fetch(`${FLOAT_API_URL}/extension`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      'URL': webpageUrl
+    }
+  })
+    .then(response => {
         return response.text();
-      })
-      .then( html => {
-        feedWindow.innerHTML = html;
-      })
-      .catch(error => console.error('Error:', error));
+    })
+    .then( html => {
+      extensionWindow.innerHTML = html;
+    })
+    .catch(error => console.error('Error:', error));
+}
+
+init();
