@@ -42,7 +42,7 @@ async function init() {
 
 
   try {
-    
+
     const response = await fetch(`${FLOAT_API_URL}/extension/`, {
       method: 'POST',
       headers: {
@@ -60,7 +60,6 @@ async function init() {
   catch (error) {
     throw new Error("Failed to connect to Float server.");
   }
-
 
   initFloatButtons();
 }
