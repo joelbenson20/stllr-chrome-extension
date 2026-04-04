@@ -1,15 +1,12 @@
 export const FLOAT_API_URL = 'http://127.0.0.1:8000/api';
 
 export async function getCsrfToken() {
+
     try {
         const response = await fetch(`${FLOAT_API_URL}/csrf-token/`, {
             method: 'GET',
             credentials: 'include'
         });
-
-        if (!response.ok) {
-            throw new Error(`Failed to fetch CSRF token: ${response.statusText}`);
-        }
 
         const data = await response.json();
         return data.csrfToken;
