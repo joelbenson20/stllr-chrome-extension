@@ -1,4 +1,4 @@
-import { initFloatButtons, FLOAT_API_URL } from './api.js';
+import { getCsrfToken, initFloatButtons, FLOAT_API_URL } from './api.js';
 
 async function getWebpageData() {
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
@@ -49,15 +49,18 @@ async function init() {
   const extensionWindow = document.getElementById('extensionWindow');
   const webpageData = await getWebpageData();
 
+  console.log('Webpage data:', webpageData);
+
   try {  
 
-  const response = await fetch(`${FLOAT_API_URL}/extension`, {
-    method: 'GET',
+  const response = await fetch(`${FLOAT_API_URL}/extension/`, {
+    method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'webpageData': JSON.stringify(webpageData),
+      'X-CSRFToken': await getCsrfToken()
     },
     credentials: 'include',
+    body: JSON.stringify({ webpageData })
   });
 
   const payload = await response.json();
@@ -65,8 +68,8 @@ async function init() {
   extensionWindow.innerHTML = payload.html;
 
   } catch (error) {
-    console.log('Error connecting to the server:', error);
-    extensionWindow.innerHTML = '<p>Error connecting to the server.</p>';
+    console.log('Error:', error);
+    extensionWindow.innerHTML = '<p>Error: ' + error.message + '</p>';
     return;
   }
 
