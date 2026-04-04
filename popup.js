@@ -1,6 +1,6 @@
 import { initFloatButtons, FLOAT_API_URL } from './api.js';
 
-async function getOgMetadataFromActiveTab() {
+async function getWebpageData() {
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
   if (!tab?.id) return null;
 
@@ -39,7 +39,9 @@ async function getOgMetadataFromActiveTab() {
 
 async function init() {
   const extensionWindow = document.getElementById('extensionWindow');
-  const webpageData = await getOgMetadataFromActiveTab();
+  const webpageData = await getWebpageData();
+
+  try {  
 
   const response = await fetch(`${FLOAT_API_URL}/extension`, {
     method: 'GET',
@@ -50,11 +52,16 @@ async function init() {
     credentials: 'include',
   });
 
-  const data = await response.json();
+  const payload = await response.json();
 
-  await chrome.storage.session.set({ csrfToken: data.csrfToken });
+  extensionWindow.innerHTML = payload.html;
 
-  extensionWindow.innerHTML = data.html;
+  } catch (error) {
+    console.log('Error connecting to the server:', error);
+    extensionWindow.innerHTML = '<p>Error connecting to the server.</p>';
+    return;
+  }
+
   initFloatButtons();
 }
 
