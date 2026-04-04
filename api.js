@@ -10,6 +10,7 @@ export async function getCsrfToken() {
 
         const data = await response.json();
         return data.csrfToken;
+
     } catch (error) {
         console.error('Error fetching CSRF token:', error);
         return null;
