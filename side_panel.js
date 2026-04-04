@@ -31,7 +31,7 @@ async function getWebpageData() {
     siteName: result.siteName,
     favIconUrl: tab.favIconUrl
   };
-  
+
 }
 
 
@@ -40,18 +40,27 @@ async function init() {
   EXTENSION_WINDOW.innerHTML = '<p>Loading...</p>';
   const webpageData = await getWebpageData();
 
-  const response = await fetch(`${FLOAT_API_URL}/extension/`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-CSRFToken': await getCsrfToken()
-    },
-    credentials: 'include',
-    body: JSON.stringify({ webpageData })
-  });
 
-  const payload = await response.json();
-  EXTENSION_WINDOW.innerHTML = payload.html;
+  try {
+    
+    const response = await fetch(`${FLOAT_API_URL}/extension/`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': await getCsrfToken()
+      },
+      credentials: 'include',
+      body: JSON.stringify({ webpageData })
+    });
+
+      const payload = await response.json();
+      EXTENSION_WINDOW.innerHTML = payload.html;
+
+  }
+  catch (error) {
+    throw new Error("Failed to connect to Float server.");
+  }
+
 
   initFloatButtons();
 }
