@@ -8,7 +8,12 @@ export function initFloatButtons() {
         button.addEventListener('click', async () => {
 
             const webpage_id = button.dataset.webpageId;
-            const { csrfToken } = await chrome.storage.session.get('csrfToken');
+            const csrfTokenElement = document.querySelector('#csrf-token');
+            if (!csrfTokenElement) {
+                console.error('Missing CSRF token input with id="csrf-token"');
+                return;
+            }
+            const csrfToken = csrfTokenElement.value;
 
             fetch(`${FLOAT_API_URL}/vote/webpage/`, {
                 method: 'POST',
@@ -20,9 +25,9 @@ export function initFloatButtons() {
                 body: JSON.stringify({ webpage_id: webpage_id })
             })
             .then(response => response.json())
-            .then(data => {
-                console.log('Response received:', data);
-                updateFloatButton(button);
+            .then(response => {
+                console.log('Response:', response);
+                updateFloatButton(button, response.status, response.num_votes);
             })
             .catch(error => console.error('Error:', error));
         });
@@ -30,22 +35,19 @@ export function initFloatButtons() {
 
 };
 
-function updateFloatButton(button) {
-    //Toggle the data-voted attribute
-    if (button.dataset.voted === 'true') {
-        button.dataset.voted = 'false';
-    }
-        else {
+export function updateFloatButton(button, status, num_votes) {
+    // If a vote was successfully created
+    if (status === '201') {
         button.dataset.voted = 'true';
+    }
+    // If a vote was successfully deleted
+    else if (status === '410') {
+        button.dataset.voted = 'false';
     }
 
     //Update float count
-    let floatCount = button.closest('p').querySelector('.float-count');
-    let count = parseInt(floatCount.textContent);
-    if (button.dataset.voted === 'true') {
-        count += 1;
-    } else {
-        count -= 1;
-    }
-    floatCount.textContent = count;
+    let floatCount = button.querySelector('.float-count');
+    floatCount.textContent = num_votes;
 }
+
+initFloatButtons();
