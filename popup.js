@@ -15,7 +15,8 @@ async function getWebpageData() {
 
         return {
           description: readMeta('og:description') || null,
-          imageUrl: readMeta('og:image') || null
+          imageUrl: readMeta('og:image') || null,
+          siteName: readMeta('og:site_name') || null
         };
       }
     });
@@ -23,17 +24,24 @@ async function getWebpageData() {
     return {
       url: tab.url,
       title: tab.title,
-      description: result?.description || '',
-      imageUrl: result?.imageUrl || ''
+      description: result?.description,
+      imageUrl: result?.imageUrl,
+      siteName: result?.siteName,
+      favIconUrl: tab.favIconUrl
     };
   } catch (error) {
+
     console.warn('Could not read OG metadata from active tab:', error);
+
     return {
       url: tab.url,
       title: tab.title,
       description: '',
-      imageUrl: ''
+      imageUrl: '',
+      siteName: '',
+      favIconUrl: tab.favIconUrl
     };
+
   }
 }
 
