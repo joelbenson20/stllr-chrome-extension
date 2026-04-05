@@ -20,24 +20,22 @@ export function initFloatButtons() {
         .then((response) => response.json())
         .then((response) => {
           console.log("Response:", response);
-          updateFloatButton(button, response.status, response.num_votes);
+          updateFloatButton(button, response);
         })
         .catch((error) => console.error("Error:", error));
     });
   });
 }
 
-export function updateFloatButton(button, status, num_votes) {
-  // If a vote was successfully created
-  if (status === "201") {
+export function updateFloatButton(button, response) {
+
+  if (response.status === "201") {
     button.dataset.voted = "true";
   }
-  // If a vote was successfully deleted
-  else if (status === "410") {
+  else if (response.status === "410") {
     button.dataset.voted = "false";
   }
 
-  //Update float count
   let floatCount = button.querySelector(".float-count");
-  floatCount.textContent = num_votes;
+  floatCount.textContent = response.num_votes;
 }
