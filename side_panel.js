@@ -6,7 +6,14 @@ const EXTENSION_WINDOW = document.getElementById('extensionWindow');
 
 async function init() {
 
-  EXTENSION_WINDOW.innerHTML = '<p>Loading...</p>';
+  EXTENSION_WINDOW.innerHTML = `
+    <div class="d-flex justify-content-center p-3">
+      <div class="spinner-border" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+    </div>
+  `;  
+  
   const webpageData = await getWebpageData();
   let csrfToken = await getCsrfToken();
   if (!csrfToken) {
