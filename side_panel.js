@@ -1,38 +1,8 @@
-import { getCsrfToken, initFloatButtons, FLOAT_API_URL } from './api.js';
+import { getCsrfToken, getWebpageData, FLOAT_API_URL } from './api.js';
+import { initFloatButtons } from './floatButtons.js';
+import { initCommentForms } from './comments.js';
 
 const EXTENSION_WINDOW = document.getElementById('extensionWindow');
-
-async function getWebpageData() {
-
-  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-  if (!tab?.id) throw new Error("No active tab found. Try refreshing the page or clicking the extension icon again.");
-
-  const [{ result }] = await chrome.scripting.executeScript({
-    target: { tabId: tab.id },
-    func: () => {
-      const readMeta = (property) =>
-        document.querySelector(`meta[property="${property}"]`)?.content ||
-        document.querySelector(`meta[name="${property}"]`)?.content ||
-        null;
-
-      return {
-        description: readMeta('og:description') || null,
-        imageUrl: readMeta('og:image') || null,
-        siteName: readMeta('og:site_name') || null
-      };
-    }
-  });
-
-  return {
-    url: tab.url,
-    title: tab.title,
-    description: result.description,
-    imageUrl: result.imageUrl,
-    siteName: result.siteName,
-    favIconUrl: tab.favIconUrl
-  };
-
-}
 
 async function init() {
 
@@ -65,6 +35,7 @@ async function init() {
   }
 
   initFloatButtons();
+  initCommentForms();
 }
 
 init().catch((error) => {
