@@ -10,7 +10,7 @@ async function init() {
   const webpageData = await getWebpageData();
   let csrfToken = await getCsrfToken();
   if (!csrfToken) {
-    throw new Error("You must be logged in to use the float extension.");
+    throw new Error("Failed to get CSRF token. Please ensure you are logged in to the Float web application.");
   }
 
   try {

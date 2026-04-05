@@ -17,11 +17,7 @@ export async function getCsrfToken() {
 
 export async function getWebpageData() {
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-  if (!tab?.id)
-    throw new Error(
-      "No active tab found. Try refreshing the page or clicking the extension icon again.",
-    );
-
+    
   const [{ result }] = await chrome.scripting.executeScript({
     target: { tabId: tab.id },
     func: () => {
