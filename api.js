@@ -1,4 +1,4 @@
-export const FLOAT_API_URL = "http://127.0.0.1:8000/api";
+export const FLOAT_API_URL = "http://127.0.0.1:8000/extension";
 
 export async function getCsrfToken() {
   try {
