@@ -30,12 +30,12 @@ export function initFloatButtons() {
 export function updateFloatButton(button, response) {
 
   if (response.status === "201") {
-    button.dataset.voted = "true";
+    button.dataset.floated = "true";
   }
   else if (response.status === "410") {
-    button.dataset.voted = "false";
+    button.dataset.floated = "false";
   }
 
-  let floatCount = button.querySelector(".float-count");
+  let floatCount = button.closest(".floats-badge").querySelector(".float-count");
   floatCount.textContent = response.num_votes;
 }
