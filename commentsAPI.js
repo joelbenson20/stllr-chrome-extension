@@ -1,4 +1,4 @@
-// Set this in extension context, e.g. 'http://127.0.0.1:8000'. Keep empty on the site.
+// Set this in extension context, e.g. 'http://127.0.0.1:8000'. Keep empty on the web server.
 const SITE_DOMAIN = "http://127.0.0.1:8000";
 
 function buildSiteUrl(path) {
@@ -104,6 +104,106 @@ function initTooltipsIn(rootEl) {
   });
 }
 
+function getNavbarScrollOffset() {
+  const extraMargin = 40;
+  const navbar = document.querySelector(".navbar.sticky-top, .navbar");
+  if (!(navbar instanceof HTMLElement)) {
+    return extraMargin;
+  }
+  return Math.ceil(navbar.getBoundingClientRect().height) + extraMargin;
+}
+
+function getPermalinkCommentElement() {
+  const hash = window.location.hash;
+  if (!hash) {
+    return null;
+  }
+
+  const hashId = decodeURIComponent(hash).replace(/^#/, "");
+  if (!hashId) {
+    return null;
+  }
+
+  const exactMatch = document.getElementById(hashId);
+  if (
+    exactMatch instanceof HTMLElement &&
+    exactMatch.classList.contains("comment")
+  ) {
+    return exactMatch;
+  }
+
+  if (/^\d+$/.test(hashId)) {
+    const prefixedMatch = document.getElementById(`c${hashId}`);
+    if (prefixedMatch instanceof HTMLElement) {
+      return prefixedMatch;
+    }
+  }
+
+  return null;
+}
+
+function highlightCommentFromPermalink(commentEl) {
+  if (!(commentEl instanceof HTMLElement)) {
+    return;
+  }
+
+  if (commentEl.dataset.permalinkHighlightTimeoutId) {
+    window.clearTimeout(Number(commentEl.dataset.permalinkHighlightTimeoutId));
+  }
+
+  commentEl.classList.remove("comment-permalink-highlight");
+  // Force a reflow so repeated hash navigation replays the animation.
+  void commentEl.offsetWidth;
+  commentEl.classList.add("comment-permalink-highlight");
+
+  const timeoutId = window.setTimeout(() => {
+    commentEl.classList.remove("comment-permalink-highlight");
+    delete commentEl.dataset.permalinkHighlightTimeoutId;
+  }, 2500);
+  commentEl.dataset.permalinkHighlightTimeoutId = String(timeoutId);
+}
+
+function scrollToPermalinkComment(commentEl) {
+  if (!(commentEl instanceof HTMLElement)) {
+    return;
+  }
+
+  const navbarOffset = getNavbarScrollOffset();
+  const commentRect = commentEl.getBoundingClientRect();
+  const visibleViewportHeight = Math.max(1, window.innerHeight - navbarOffset);
+  const desiredTopInViewport =
+    navbarOffset +
+    Math.max(0, (visibleViewportHeight - commentRect.height) / 2);
+  const top = window.scrollY + commentRect.top - desiredTopInViewport;
+
+  window.scrollTo({
+    top: Math.max(0, top),
+    behavior: "smooth",
+  });
+}
+
+function handlePermalinkCommentNavigation() {
+  const commentEl = getPermalinkCommentElement();
+  if (!commentEl) {
+    return;
+  }
+
+  scrollToPermalinkComment(commentEl);
+  highlightCommentFromPermalink(commentEl);
+}
+
+function navigateToCommentPermalink(commentId) {
+  const numericId = Number.parseInt(String(commentId), 10);
+  if (Number.isNaN(numericId) || numericId <= 0) {
+    return;
+  }
+
+  const permalinkHash = `#c${numericId}`;
+  const nextUrl = `${window.location.pathname}${window.location.search}${permalinkHash}`;
+  window.history.replaceState(null, "", nextUrl);
+  window.requestAnimationFrame(handlePermalinkCommentNavigation);
+}
+
 function buildCommentElement(commentData) {
   const wrapper = document.createElement("div");
   wrapper.id = `c${commentData.id}`;
@@ -116,10 +216,10 @@ function buildCommentElement(commentData) {
   const safeComment = escapeHtml(commentData.comment || "");
 
   wrapper.innerHTML = `
-        <div class="d-flex flex-column">
+        <div class="comment-frame d-flex flex-column rounded p-2">
             <h6 class="comment-header mb-1 d-flex justify-content-between" style="font-size: 0.8rem">
                 <div class="d-inline flex-grow-1">
-                    <b>@${safeUserName}</b>
+                    <span class="text-light text-decoration-none">@${safeUserName}</span>
                     <span class="small text-secondary">${safeDate}</span>
                     <span>${safeUserUrl ? `<a href="${safeUserUrl}" target="_new" class="text-decoration-none">${safeUserUrl}</a>` : ""}</span>
                 </div>
@@ -134,7 +234,7 @@ function buildCommentElement(commentData) {
                         <i class="float-icon bi bi-arrow-up-circle-fill"></i>
                     </a>
                 </span>
-                ${canReply ? `<button class="btn btn-link btn-sm text-decoration-none mx-1 p-0" type="button" data-bs-toggle="collapse" data-bs-target="#reply-form-${commentData.id}" data-reply-to="${commentData.id}" aria-expanded="false" aria-controls="reply-form-${commentData.id}">Reply</button><div class="collapse mt-2" id="reply-form-${commentData.id}" data-reply-form-slot="${commentData.id}"></div>` : ""}
+                ${canReply ? `<button class="comment-reply-link btn btn-link btn-sm text-decoration-none mx-1 p-0" type="button" data-bs-toggle="collapse" data-bs-target="#reply-form-${commentData.id}" data-reply-to="${commentData.id}" aria-expanded="false" aria-controls="reply-form-${commentData.id}">Reply</button><div class="collapse mt-2" id="reply-form-${commentData.id}" data-reply-form-slot="${commentData.id}"></div>` : ""}
             </div>
         </div>
     `;
@@ -296,6 +396,15 @@ function handleReplyButtonClick(event) {
 
   const slotEl = document.querySelector(targetSelector);
   ensureReplyFormMounted(slotEl, replyTo);
+
+  slotEl.addEventListener(
+    "shown.bs.collapse",
+    () => {
+      const textarea = slotEl.querySelector('textarea[name="comment"]');
+      textarea?.focus();
+    },
+    { once: true },
+  );
 }
 
 function closeReplyFormAfterSubmit(form, payload) {
@@ -359,6 +468,7 @@ async function submitCommentForm(event) {
       form.reset();
       hideCommentError(form);
       closeReplyFormAfterSubmit(form, payload);
+      navigateToCommentPermalink(data.id);
       return;
     }
 
@@ -475,3 +585,7 @@ async function toggleCommentFeedback(event) {
 document.addEventListener("submit", submitCommentForm);
 document.addEventListener("click", toggleCommentFeedback);
 document.addEventListener("click", handleReplyButtonClick);
+window.addEventListener("hashchange", () => {
+  window.requestAnimationFrame(handlePermalinkCommentNavigation);
+});
+window.requestAnimationFrame(handlePermalinkCommentNavigation);
