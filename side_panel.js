@@ -1,5 +1,6 @@
 import { getCsrfToken, getWebpageData, FLOAT_API_URL } from './api.js';
-import { initFloatButtons } from './floatButtons.js';
+import { initFloatButtons, initToolTips } from './floatButtons.js';
+import './commentsAPI.js';
 
 const EXTENSION_WINDOW = document.getElementById('extensionWindow');
 
@@ -41,6 +42,8 @@ async function init() {
   }
 
   initFloatButtons();
+  initToolTips();
+
 }
 
 init().catch((error) => {

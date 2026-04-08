@@ -39,3 +39,12 @@ export function updateFloatButton(button, response) {
   let floatCount = button.closest(".floats-badge").querySelector(".float-count");
   floatCount.textContent = response.num_votes;
 }
+
+export function initToolTips() {
+  const tooltipTriggerList = document.querySelectorAll(
+    '[data-bs-toggle="tooltip"]',
+  );
+  const tooltipList = [...tooltipTriggerList].map(
+    (tooltipTriggerEl) => new bootstrap.Tooltip(tooltipTriggerEl),
+  );
+}
