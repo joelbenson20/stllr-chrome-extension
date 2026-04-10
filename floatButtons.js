@@ -5,17 +5,17 @@ export function initFloatButtons() {
 
   float_buttons.forEach((button) => {
     button.addEventListener("click", async () => {
-      const webpage_id = button.dataset.webpageId;
+      const page_id = button.dataset.webpageId;
       const csrfToken = button.dataset.csrfToken;
 
-      fetch(`${FLOAT_API_URL}/float/webpage/`, {
+      fetch(`${FLOAT_API_URL}/page_float/`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           "X-CSRFToken": csrfToken,
         },
         credentials: "include",
-        body: JSON.stringify({ webpage_id: webpage_id }),
+        body: JSON.stringify({ page_id: page_id }),
       })
         .then((response) => response.json())
         .then((response) => {

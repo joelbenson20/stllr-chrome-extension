@@ -1,4 +1,4 @@
-import { getCsrfToken, getWebpageData, FLOAT_API_URL } from './api.js';
+import { getCsrfToken, getPageData, FLOAT_API_URL } from './api.js';
 import { initFloatButtons, initToolTips } from './floatButtons.js';
 import './commentsAPI.js';
 
@@ -14,7 +14,7 @@ async function init() {
     </div>
   `;  
   
-  const webpageData = await getWebpageData();
+  const pageData = await getPageData();
   let csrfToken = await getCsrfToken();
   if (!csrfToken) {
     throw new Error("Failed to get CSRF token. Please ensure you are logged in to the Float web application and that the Float server is not down.");
@@ -29,7 +29,7 @@ async function init() {
         'X-CSRFToken': csrfToken
       },
       credentials: 'include',
-      body: JSON.stringify({ webpageData })
+      body: JSON.stringify({ pageData })
     });
 
     response = await response.json();

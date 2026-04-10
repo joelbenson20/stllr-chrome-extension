@@ -15,7 +15,7 @@ export async function getCsrfToken() {
   }
 }
 
-export async function getWebpageData() {
+export async function getPageData() {
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
     
   const [{ result }] = await chrome.scripting.executeScript({
