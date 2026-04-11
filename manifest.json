@@ -1,10 +1,10 @@
 {
     "manifest_version": 3,
-    "name": "Float",
+    "name": "Stellr",
     "version": "1.0",
-    "description": "Google Chrome extension for Float.",
+    "description": "Google Chrome extension for Stellr.",
     "side_panel": {
-        "default_title": "Float",
+        "default_title": "stellr",
         "default_path": "side_panel.html",
         "default_icon": {
             "16": "icons/icon16.png",

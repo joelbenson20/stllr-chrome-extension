@@ -5,7 +5,7 @@ export function initFloatButtons() {
 
   float_buttons.forEach((button) => {
     button.addEventListener("click", async () => {
-      const page_id = button.dataset.webpageId;
+      const page_id = button.dataset.pageId;
       const csrfToken = button.dataset.csrfToken;
 
       fetch(`${FLOAT_API_URL}/page_float/`, {
