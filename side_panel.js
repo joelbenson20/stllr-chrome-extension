@@ -46,17 +46,15 @@ async function init() {
 
 }
 
-function runInit() {
-  init().catch((error) => {
-    console.error(error);
-  });
-}
 
-// Notify background that the panel is open so it can trigger TAB_CHANGED if the tab is ready
-chrome.runtime.connect({ name: 'side_panel' });
+init().catch((error) => {
+  console.error(error);
+  EXTENSION_WINDOW.innerHTML = '<p>' + error.message + '</p>';
+})
 
 chrome.runtime.onMessage.addListener((message) => {
   if (message.type === "TAB_CHANGED") {
-    runInit();
+    init().catch(error);
+    EXTENSION_WINDOW.innerHTML = '<p>' + error.message + '</p>';
   }
 });

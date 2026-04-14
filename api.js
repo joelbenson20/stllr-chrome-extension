@@ -17,10 +17,6 @@ export async function getCsrfToken() {
 
 export async function getPageData() {
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-
-  if (!tab?.url) {
-    throw new Error("Could not retrieve the active tab URL. The page may still be loading.");
-  }
     
   const [{ result }] = await chrome.scripting.executeScript({
     target: { tabId: tab.id },
@@ -36,6 +32,7 @@ export async function getPageData() {
         description: readMeta("og:description") || null,
         imageUrl: readMeta("og:image") || null,
         siteName: readMeta("og:site_name") || null,
+        html: document.documentElement.outerHTML,
       };
     },
   });
@@ -49,5 +46,6 @@ export async function getPageData() {
     imageUrl: result.imageUrl,
     siteName: result.siteName,
     favIconUrl: tab.favIconUrl,
+    html: result.html,
   };
 }
