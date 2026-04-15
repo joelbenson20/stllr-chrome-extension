@@ -32,7 +32,7 @@ export async function getPageData() {
         description: readMeta("og:description") || null,
         imageUrl: readMeta("og:image") || null,
         siteName: readMeta("og:site_name") || null,
-        html: document.documentElement.outerHTML,
+        innerText: document.documentElement.innerText,
       };
     },
   });
@@ -46,6 +46,6 @@ export async function getPageData() {
     imageUrl: result.imageUrl,
     siteName: result.siteName,
     favIconUrl: tab.favIconUrl,
-    html: result.html,
+    innerText: result.innerText,
   };
 }
