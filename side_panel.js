@@ -21,8 +21,7 @@ async function init() {
   }
 
   try {
-
-    let response = await fetch(`${FLOAT_API_URL}/extension/`, {
+    let response = await fetch(`${FLOAT_API_URL}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -31,6 +30,10 @@ async function init() {
       credentials: 'include',
       body: JSON.stringify({ pageData })
     });
+
+    if (!response.ok) {
+      throw new Error(`Server responded with status ${response.status}: ${response.statusText}`);
+    }
 
     response = await response.json();
     EXTENSION_WINDOW.innerHTML = response.html;

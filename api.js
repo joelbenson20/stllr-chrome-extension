@@ -1,8 +1,8 @@
-export const FLOAT_API_URL = "http://127.0.0.1:8000/extension";
+export const FLOAT_API_URL = "http://127.0.0.1:8000/extension/";
 
 export async function getCsrfToken() {
   try {
-    const response = await fetch(`${FLOAT_API_URL}/csrf-token/`, {
+    const response = await fetch(`${FLOAT_API_URL}csrf-token/`, {
       method: "GET",
       credentials: "include",
     });
@@ -27,12 +27,8 @@ export async function getPageData() {
         null;
 
       return {
-        type: readMeta("og:type") || null,
-        keywords: readMeta("keywords") || null,
-        description: readMeta("og:description") || null,
-        imageUrl: readMeta("og:image") || null,
-        siteName: readMeta("og:site_name") || null,
-        innerText: document.documentElement.innerText,
+        head: document.head.innerHTML,
+        innerText: document.documentElement.innerText
       };
     },
   });
@@ -40,12 +36,8 @@ export async function getPageData() {
   return {
     url: tab.url,
     title: tab.title,
-    type: result.type,
-    tags: result.keywords,
-    description: result.description,
-    imageUrl: result.imageUrl,
-    siteName: result.siteName,
     favIconUrl: tab.favIconUrl,
+    head: result.head,
     innerText: result.innerText,
   };
 }
