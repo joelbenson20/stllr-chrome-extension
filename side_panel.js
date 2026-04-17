@@ -1,5 +1,5 @@
 import { getCsrfToken, getPageData, FLOAT_API_URL } from './api.js';
-import { initFloatButtons, initToolTips } from './floatButtons.js';
+import { initPageVoteButtons } from './pageVotes.js';
 import './commentsAPI.js';
 
 const EXTENSION_WINDOW = document.getElementById('extensionWindow');
@@ -41,8 +41,16 @@ async function init() {
     return;
   }
 
-  initFloatButtons();
-  initToolTips();
+  //initialize tooltips
+  const tooltipTriggerList = document.querySelectorAll(
+  '[data-bs-toggle="tooltip"]',
+  );
+  const tooltipList = [...tooltipTriggerList].map(
+    (tooltipTriggerEl) => new bootstrap.Tooltip(tooltipTriggerEl),
+  );
+
+  //initialize vote buttons
+  initPageVoteButtons();
 
 }
 
