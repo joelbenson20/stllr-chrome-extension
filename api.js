@@ -1,8 +1,8 @@
-export const FLOAT_API_URL = "http://127.0.0.1:8000/extension/";
+export const BASE_URL = "http://127.0.0.1:8000/";
 
 export async function getCsrfToken() {
   try {
-    const response = await fetch(`${FLOAT_API_URL}csrf-token/`, {
+    const response = await fetch(`${BASE_URL}extension/csrf-token/`, {
       method: "GET",
       credentials: "include",
     });
