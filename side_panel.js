@@ -1,6 +1,6 @@
-import { getCsrfToken, getPageData, FLOAT_API_URL } from './api.js';
+import { getCsrfToken, getPageData, BASE_URL } from './api.js';
 import { initPageVoteButtons } from './pageVotes.js';
-import './commentsAPI.js';
+import { initComments } from './comments.js';
 
 const EXTENSION_WINDOW = document.getElementById('extensionWindow');
 
@@ -15,13 +15,14 @@ async function init() {
   `;  
   
   const pageData = await getPageData();
+  
   let csrfToken = await getCsrfToken();
   if (!csrfToken) {
     throw new Error("Failed to get CSRF token. Please ensure you are logged in to the Float web application and that the Float server is not down.");
   }
 
   try {
-    let response = await fetch(`${FLOAT_API_URL}`, {
+    let response = await fetch(BASE_URL + 'extension/', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -44,7 +45,6 @@ async function init() {
     return;
   }
 
-  //initialize tooltips
   const tooltipTriggerList = document.querySelectorAll(
   '[data-bs-toggle="tooltip"]',
   );
@@ -52,8 +52,9 @@ async function init() {
     (tooltipTriggerEl) => new bootstrap.Tooltip(tooltipTriggerEl),
   );
 
-  //initialize vote buttons
   initPageVoteButtons();
+  initComments();
+
 
 }
 
