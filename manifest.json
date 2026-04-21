@@ -1,8 +1,8 @@
 {
     "manifest_version": 3,
-    "name": "Stellr",
+    "name": "stellr",
     "version": "1.0",
-    "description": "Google Chrome extension for Stellr.",
+    "description": "the universal forum.",
     "side_panel": {
         "default_title": "stellr",
         "default_path": "side_panel.html",
