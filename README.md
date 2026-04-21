@@ -1,2 +1,2 @@
-# float-chrome-extension
-Chrome browser extension for Float.
+# stellr-chrome-extension
+the universal forum.
