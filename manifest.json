@@ -2,7 +2,7 @@
     "manifest_version": 3,
     "name": "stellr",
     "version": "1.0",
-    "description": "the universal forum.",
+    "description": "The Universal Forum",
     "side_panel": {
         "default_title": "stellr",
         "default_path": "side_panel.html",
