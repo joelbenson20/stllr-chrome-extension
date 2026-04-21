@@ -1,38 +1,39 @@
 const SITE_URL = 'http://127.0.0.1:8000/'
-const COMMENT_VOTE_PATH = 'comments/vote/'
+const COMMENT_STAR_PATH = 'comments/star/'
 
-function initCommentVoteButton(voteButton) {
-    voteButton.addEventListener('click', (e) => {
+function initCommentStarButton(starButton) {
+    starButton.addEventListener('click', (e) => {
             e.preventDefault();
             var formData = new FormData()
-            formData.append('id', voteButton.dataset.id)
-            formData.append('action', voteButton.dataset.action)
+            formData.append('id', starButton.dataset.id)
+            formData.append('action', starButton.dataset.action)
             var options = {
                 method: 'POST',
-                headers: {'X-CSRFToken': voteButton.dataset.csrfToken},
+                headers: {'X-CSRFToken': starButton.dataset.csrfToken},
                 mode: 'same-origin',
                 body: formData
             }
-            fetch(SITE_URL + COMMENT_VOTE_PATH, options)
+            fetch(SITE_URL + COMMENT_STAR_PATH, options)
             .then(response => response.json())
             .then(data => {
                 console.log(data)
                 if (data['status'] === '200') {
-                    var previousAction = voteButton.dataset.action;
-                    var newAction = previousAction === 'vote' ? 'unvote' : 'vote';
-                    voteButton.dataset.action = newAction
+                    var previousAction = starButton.dataset.action;
+                    var newAction = previousAction === 'star' ? 'unstar' : 'star';
+                    starButton.dataset.action = newAction
 
-                    var voteCount = voteButton.querySelector('.vote-count');
-                    var previousCount = parseInt(voteCount.textContent);
-                    voteCount.textContent = previousAction === 'vote' ? previousCount + 1 : previousCount - 1;
+                    var starCount = starButton.querySelector('.star-count');
+                    var previousCount = parseInt(starCount.textContent);
+                    starCount.textContent = previousAction === 'star' ? previousCount + 1 : previousCount - 1;
 
-                    var icon = voteButton.querySelector('i');
+                    var icon = starButton.querySelector('i');
                     icon.classList.toggle('bi-star-fill')
                     icon.classList.toggle('bi-star');
                 }
             })
         })
 }
+
 function initCommentForm(form) {
     form.addEventListener('submit', (e) => {
         e.preventDefault();
@@ -45,7 +46,7 @@ function initCommentForm(form) {
             headers: {'X-CSRFToken': csrfToken},
             body: formData
         }
-        fetch('http://127.0.0.1:8000' + actionPath, options)
+        fetch(SITE_URL + actionPath, options)
         .then(response => response.json())
         .then(response => {
             if (response.status === '201') {
@@ -59,11 +60,11 @@ function initCommentForm(form) {
                 // Insert the new comment
                 commentTree.insertAdjacentHTML('afterbegin', response.comment);
 
-                // Initialize new comment form and vote button
+                // Initialize new comment form and star button
                 var newForm = document.querySelector(`#comment-form-${response.commentId}`);
-                var newVoteButton = document.querySelector(`#comment-vote-button-${response.commentId}`);
+                var newStarButton = document.querySelector(`#comment-star-button-${response.commentId}`);
                 initCommentForm(newForm);
-                initCommentVoteButton(newVoteButton);
+                initCommentStarButton(newStarButton);
 
                 // Close form container for threaded comments
                 if (parentId) {
@@ -79,14 +80,13 @@ function initCommentForm(form) {
         .catch(error => console.error('Error:', error))
     })
  }
-export function initComments() {
-    var commentVoteButtons = document.querySelectorAll('.comment-vote-button');
-    var commentForms = document.querySelectorAll('.comment-form')
 
-    commentVoteButtons.forEach(voteButton => {
-    initCommentVoteButton(voteButton);
+ export function initComments() {
+    var commentStarButtons = document.querySelectorAll('.comment-star-button');
+    commentStarButtons.forEach(starButton => {
+        initCommentStarButton(starButton);
     });
-
+    var commentForms = document.querySelectorAll('.comment-form');
     commentForms.forEach(form => {
     initCommentForm(form);
     });

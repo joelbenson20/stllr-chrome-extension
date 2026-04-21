@@ -1,5 +1,5 @@
 import { getCsrfToken, getPageData, BASE_URL } from './api.js';
-import { initPageVoteButtons } from './pageVotes.js';
+import { initPageStarButtons } from './pageStarButtons.js';
 import { initComments } from './comments.js';
 
 const EXTENSION_WINDOW = document.getElementById('extensionWindow');
@@ -52,7 +52,7 @@ async function init() {
     (tooltipTriggerEl) => new bootstrap.Tooltip(tooltipTriggerEl),
   );
 
-  initPageVoteButtons();
+  initPageStarButtons();
   initComments();
 
 
