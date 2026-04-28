@@ -1,4 +1,4 @@
-const SITE_URL = 'http://127.0.0.1:8000/'
+const SITE_URL = 'http://192.168.50.86:8000/'
 const COMMENT_STAR_PATH = 'comments/star/'
 
 
