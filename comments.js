@@ -21,7 +21,7 @@ function initCommentForm(form) {
                 // In case of no parent, get the root comment tree (first one returned)
                 var commentTree = document.querySelector('.comment-tree');
                 // If comment parent, get the comment tree of the parent
-                var parentId = form.dataset.parentId;
+                var parentId = form.querySelector('[name=parent]').value
                 if (parentId) {
                     commentTree = document.querySelector(`#children-${parentId}`);
                 }

@@ -9,15 +9,18 @@
     <link rel="stylesheet" href="side_panel.css">
 </head>
 <body>
+    <button id="refreshButton" class="btn btn-dark btn-sm rounded-circle m-2" title="Enter page forum"><i class="bi bi-door-open-fill"></i></button>
+    <button class="btn btn-dark btn-sm rounded m-2">Page info</button>
+    <button class="btn btn-dark btn-sm rounded m-2">Comments</button>
+    <button class="btn btn-dark btn-sm rounded m-2">Chat</button>
 
-    <div id="extensionWindow" class="container-fluid m-0 p-0">
+    <div id="extensionWindow" class="container-fluid">
         <div class="d-flex justify-content-center p-3">
             <div class="spinner-border" role="status">
                 <span class="visually-hidden">Loading...</span>
             </div>
         </div>
     </div>
-
     <script src="libs/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script type="module" src="side_panel.js"></script>
 </body>

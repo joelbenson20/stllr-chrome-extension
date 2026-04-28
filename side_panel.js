@@ -3,6 +3,7 @@ import { initPageStarButtons } from './pageStarButtons.js';
 import { initComments } from './comments.js';
 
 const EXTENSION_WINDOW = document.getElementById('extensionWindow');
+const REFRESH_BUTTON = document.getElementById('refreshButton');
 
 async function init() {
 
@@ -58,15 +59,12 @@ async function init() {
 
 }
 
+if (document.readyState === 'complete') {
+  init();
+} else {
+  window.addEventListener('load', init);
+}
 
-init().catch((error) => {
-  console.error(error);
-  EXTENSION_WINDOW.innerHTML = '<p>' + error.message + '</p>';
+REFRESH_BUTTON.addEventListener('click', (e) => {
+  init();
 })
-
-chrome.runtime.onMessage.addListener((message) => {
-  if (message.type === "TAB_CHANGED") {
-    init().catch(error);
-    EXTENSION_WINDOW.innerHTML = '<p>' + error.message + '</p>';
-  }
-});
