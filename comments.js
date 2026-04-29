@@ -1,6 +1,6 @@
-const SITE_URL = 'http://127.0.0.1:8000/'
-const COMMENT_STAR_PATH = 'comments/star/'
+import { BASE_URL } from './api.js'
 
+const COMMENT_STAR_PATH = 'comments/star/'
 
 function initCommentForm(form) {
     form.addEventListener('submit', (e) => {
@@ -14,7 +14,7 @@ function initCommentForm(form) {
             headers: {'X-CSRFToken': csrfToken},
             body: formData
         }
-        fetch(SITE_URL + actionPath, options)
+        fetch(BASE_URL + actionPath, options)
         .then(response => response.json())
         .then(response => {
             if (response.status === '201') {
@@ -85,7 +85,7 @@ function initCommentStarButton(starButton) {
                 mode: 'same-origin',
                 body: formData
             }
-            fetch(SITE_URL + COMMENT_STAR_PATH, options)
+            fetch(BASE_URL + COMMENT_STAR_PATH, options)
             .then(response => response.json())
             .then(data => {
                 console.log(data)

@@ -1,4 +1,5 @@
-const SITE_URL = 'http://127.0.0.1:8000/'
+import { BASE_URL } from './api.js'
+
 const PAGE_STAR_PATH = 'page/star/';
 
 export function initPageStarButtons() {
@@ -17,7 +18,7 @@ export function initPageStarButtons() {
                 mode: 'same-origin',
                 body: formData
             }
-            fetch(SITE_URL + PAGE_STAR_PATH, options)
+            fetch(BASE_URL + PAGE_STAR_PATH, options)
             .then(response => response.json())
             .then(data => {
 
