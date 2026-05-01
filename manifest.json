@@ -1,10 +1,10 @@
 {
     "manifest_version": 3,
-    "name": "stellr",
+    "name": "stllr - dev",
     "version": "1.0",
-    "description": "The Universal Forum",
+    "description": "The Universal Forum - Dev",
     "side_panel": {
-        "default_title": "stellr",
+        "default_title": "stllr",
         "default_path": "side_panel.html",
         "default_icon": {
             "16": "icons/icon16.png",
@@ -23,9 +23,6 @@
         "sidePanel"
     ],
     "host_permissions": [
-        "http://127.0.0.1:8000/*",
-        "http://192.168.50.86:8000/*",
-        "https://stellr.forum/*",
         "https://*/*", 
         "http://*/*"
     ],
