@@ -1,12 +1,12 @@
 import { BASE_URL } from './api.js'
 
 const COMMENT_STAR_PATH = 'comments/star/'
+const POST_COMMENT_PATH = 'comments/post/';
 
 function initCommentForm(form) {
     form.addEventListener('submit', (e) => {
         e.preventDefault();
         const form = e.target;
-        const actionPath = new URL(form.action).pathname;
         const csrfToken = form.querySelector('[name=csrfmiddlewaretoken]').value;
         const formData = new FormData(form);
         var options = {
@@ -14,7 +14,7 @@ function initCommentForm(form) {
             headers: {'X-CSRFToken': csrfToken},
             body: formData
         }
-        fetch(BASE_URL + actionPath, options)
+        fetch(BASE_URL + POST_COMMENT_PATH, options)
         .then(response => response.json())
         .then(response => {
             if (response.status === '201') {
