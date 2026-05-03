@@ -190,7 +190,7 @@ function initmarkdownEditButton(button) {
     initmarkdownEditButton(markdownEditButton);
 }
 
- function initComments() {
+ export function initComments() {
 
     // Initialize star buttons
     var commentStarButtons = document.querySelectorAll('.comment-star-button');
@@ -205,6 +205,3 @@ function initmarkdownEditButton(button) {
     })
 
  }
-
-
-initComments();

@@ -5,14 +5,14 @@
     "description": "The Universal Forum - Dev",
     "side_panel": {
         "default_title": "stllr",
-        "default_path": "side_panel.html",
+        "default_path": "index.html",
         "default_icon": {
             "16": "icons/icon16.png",
             "32": "icons/icon32.png",
             "48": "icons/icon48.png",
             "128": "icons/icon128.png"
         },
-        "default_panel": "side_panel.html"
+        "default_panel": "index.html"
     },
     "background": {
         "service_worker": "background.js"
