@@ -6,14 +6,6 @@ const EXTENSION_WINDOW = document.getElementById('extensionWindow');
 const REFRESH_BUTTON = document.getElementById('refreshButton');
 
 async function init() {
-
-  EXTENSION_WINDOW.innerHTML = `
-    <div class="d-flex justify-content-center p-3">
-      <div class="spinner-border" role="status">
-        <span class="visually-hidden">Loading...</span>
-      </div>
-    </div>
-  `;  
   
   const pageData = await getPageData();
   
@@ -56,15 +48,38 @@ async function init() {
   initPageStarButtons();
   initComments();
 
+  EXTENSION_WINDOW.addEventListener('click', (e) => {
+    const anchor = e.target.closest('a[href]');
+    if (!anchor) return;
+    const href = anchor.getAttribute('href');
+    if (!href || href.startsWith('#')) return;
+    e.preventDefault();
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      chrome.tabs.update(tabs[0].id, { url: href });
+    });
+  });
 
 }
 
-if (document.readyState === 'complete') {
-  init();
-} else {
-  window.addEventListener('load', init);
+function initWhenReady() {
+
+  EXTENSION_WINDOW.innerHTML = `
+    <div class="d-flex justify-content-center p-3">
+      <div class="spinner-border" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+    </div>
+  `;
+
+  if (document.readyState === 'complete') {
+    init();
+  } else {
+    window.addEventListener('load', init);
+  }
 }
+
+initWhenReady()
 
 REFRESH_BUTTON.addEventListener('click', (e) => {
-  init();
+  initWhenReady();
 })
