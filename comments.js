@@ -1,42 +1,37 @@
 import { BASE_URL } from './api.js'
 
-const COMMENT_STAR_PATH = 'comments/star/'
+const COMMENT_STAR_PATH = 'comments/star/';
+const POST_COMMENT_PATH = 'comments/post/';
+const MARKDOWNIFY_PATH = 'api/markdownify/';
 
-function initCommentForm(form) {
+
+function initFormSubmission(form) {
     form.addEventListener('submit', (e) => {
         e.preventDefault();
-        const form = e.target;
-        const actionPath = new URL(form.action).pathname;
-        const csrfToken = form.querySelector('[name=csrfmiddlewaretoken]').value;
-        const formData = new FormData(form);
+        var formData = new FormData(form);
+        var csrfToken = form.querySelector('[name=csrfmiddlewaretoken]').value;
         var options = {
             method: 'POST',
             headers: {'X-CSRFToken': csrfToken},
             body: formData
         }
-        fetch(BASE_URL + actionPath, options)
+        fetch(BASE_URL + POST_COMMENT_PATH, options)
         .then(response => response.json())
         .then(response => {
             if (response.status === '201') {
-                // In case of no parent, get the root comment tree (first one returned)
                 var commentTree = document.querySelector('.comment-tree');
-                // If comment parent, get the comment tree of the parent
                 var parentId = form.querySelector('[name=parent]').value
                 if (parentId) {
                     commentTree = document.querySelector(`#children-${parentId}`);
                 }
-                // Insert the new comment
                 commentTree.insertAdjacentHTML('afterbegin', response.comment);
 
                 // Initialize new reply form
-                var newComment = document.querySelector(`#comment-${response.commentId}`)
-                var newForm = newComment.querySelector('.comment-form');
-                var newReplyFormContainer = newComment.querySelector('.reply-form-container');
-                var newStarButton = newComment.querySelector('.comment-star-button');
-                initCommentForm(newForm);
-                initFormFocus(newForm);
-                initReplyAutoFocus(newReplyFormContainer);
+                var newComment = document.querySelector(`#comment-${response.commentId}`);
+                newStarButton = newComment.querySelector('.comment-star-button');
+                newForm = newComment.querySelector('.comment-form')
                 initCommentStarButton(newStarButton);
+                initCommentForm(newForm);
 
                 // Close form container for threaded comments
                 if (parentId) {
@@ -53,7 +48,8 @@ function initCommentForm(form) {
         })
         .catch(error => console.error('Error:', error))
     })
- }
+    
+}
 
  function initFormFocus(form) {
     var textarea = form.querySelector('.comment-form-textarea');
@@ -63,7 +59,7 @@ function initCommentForm(form) {
             textarea.style.height = "100px";
         }
         textarea.style.resize = "vertical";
-        buttons.style.display = "block";
+        buttons.style.display = "flex";
     })
  }
 
@@ -73,32 +69,31 @@ function initCommentForm(form) {
     })
 }
 
-function initCommentStarButton(starButton) {
-    starButton.addEventListener('click', (e) => {
+function initCommentStarButton(button) {
+    button.addEventListener('click', (e) => {
             e.preventDefault();
             var formData = new FormData()
-            formData.append('id', starButton.dataset.id)
-            formData.append('action', starButton.dataset.action)
+            formData.append('id', button.dataset.id)
+            formData.append('action', button.dataset.action)
             var options = {
                 method: 'POST',
-                headers: {'X-CSRFToken': starButton.dataset.csrfToken},
+                headers: {'X-CSRFToken': button.dataset.csrfToken},
                 mode: 'same-origin',
                 body: formData
             }
             fetch(BASE_URL + COMMENT_STAR_PATH, options)
             .then(response => response.json())
             .then(data => {
-                console.log(data)
                 if (data['status'] === '200') {
-                    var previousAction = starButton.dataset.action;
+                    var previousAction = button.dataset.action;
                     var newAction = previousAction === 'star' ? 'unstar' : 'star';
-                    starButton.dataset.action = newAction
+                    button.dataset.action = newAction
 
-                    var starCount = starButton.querySelector('.star-count');
+                    var starCount = button.querySelector('.star-count');
                     var previousCount = parseInt(starCount.textContent);
                     starCount.textContent = previousAction === 'star' ? previousCount + 1 : previousCount - 1;
 
-                    var icon = starButton.querySelector('i');
+                    var icon = button.querySelector('i');
                     icon.classList.toggle('bi-star-fill')
                     icon.classList.toggle('bi-star');
                 }
@@ -109,24 +104,104 @@ function initCommentStarButton(starButton) {
 function closeCommentForm(cancelButton) {
     var form = cancelButton.closest('.comment-form');
     var textarea = form.querySelector('.comment-form-textarea');
+    var markdownPreviewContainer = form.querySelector('.comment-form-markdown-preview-container');
     var buttons = form.querySelector('.comment-form-buttons');
+
+    markdownPreviewContainer.style.display = 'none';
     buttons.style.display = "none";
     textarea.style.height = "1rem";
     textarea.style.resize = "none";
+    textarea.style.display = 'block';
+}
+
+function initCancelButton(button) {
+    button.addEventListener('click', (e) => {
+        closeCommentForm(button);
+    })
+}
+
+function initmarkdownPreviewButton(button) {
+    button.addEventListener('click', (e) => {
+        var form = button.closest('.comment-form');
+        var csrfToken = form.querySelector('[name=csrfmiddlewaretoken]').value;
+        
+        var textarea = form.querySelector('.comment-form-textarea');
+        var formData = new FormData();
+        formData.append('content', textarea.value);
+        var options = {
+            method: 'POST',
+            headers: {'X-CSRFToken': csrfToken},
+            body: formData
+        }
+         fetch(BASE_URL + MARKDOWNIFY_PATH, options)
+        .then(response => response.json())
+        .then(response => {
+            if (response.status === '200') {
+
+                var markdownEditButton = form.querySelector('.comment-form-markdown-edit-button');
+                var markdownPreviewContainer = form.querySelector('.comment-form-markdown-preview-container');
+
+                markdownPreviewContainer.innerHTML = response.markdown;
+                button.style.display = 'none';
+                markdownPreviewContainer.style.display = 'block';
+                markdownEditButton.style.display = 'block';
+                textarea.style.display = 'none';
+
+            }
+        })
+
+    });
+}
+
+function initmarkdownEditButton(button) {
+    button.addEventListener('click', (e) => {
+        e.preventDefault();
+        var form = button.closest('.comment-form');
+        var markdownPreviewButton = form.querySelector('.comment-form-markdown-preview-button');
+        var textarea = form.querySelector('.comment-form-textarea');
+        var markdownPreviewContainer = form.querySelector('.comment-form-markdown-preview-container');
+
+        // Hide preview container and edit button, show edit container and preview button
+        markdownPreviewContainer.innerHTML = '';
+        markdownPreviewContainer.style.display = 'none';
+        markdownPreviewButton.style.display = 'block'
+        textarea.style.display = 'block';
+        button.style.display = 'none';
+
+        // Focus at end of textarea content
+        const end = textarea.value.length;
+        textarea.focus();
+        textarea.setSelectionRange(end, end);
+    })
+}
+
+ function initCommentForm(form) {
+    initFormSubmission(form);
+    initFormFocus(form);
+
+    var replyFormContainer = form.closest('.reply-form-container');
+    var cancelButton = form.querySelector('.comment-cancel-button');
+    var markdownPreviewButton = form.querySelector('.comment-form-markdown-preview-button');
+    var markdownEditButton = form.querySelector('.comment-form-markdown-edit-button');
+
+    if (replyFormContainer) initReplyAutoFocus(replyFormContainer);
+    initCancelButton(cancelButton);
+    initmarkdownPreviewButton(markdownPreviewButton);
+    initmarkdownEditButton(markdownEditButton);
 }
 
  export function initComments() {
+
+    // Initialize star buttons
     var commentStarButtons = document.querySelectorAll('.comment-star-button');
-    commentStarButtons.forEach(starButton => {
-        initCommentStarButton(starButton);
-    });
+    commentStarButtons.forEach(button => {
+        initCommentStarButton(button);
+    })
+
+    // Initialize comment forms
     var commentForms = document.querySelectorAll('.comment-form');
     commentForms.forEach(form => {
-        initCommentForm(form);
-        initFormFocus(form);
-    });
-    var replyFormContainers = document.querySelectorAll('.reply-form-container');
-    replyFormContainers.forEach(replyFormContainer => {
-        initReplyAutoFocus(replyFormContainer);
+        initCommentForm(form)
     })
+
  }
