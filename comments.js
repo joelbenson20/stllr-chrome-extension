@@ -28,8 +28,8 @@ function initFormSubmission(form) {
 
                 // Initialize new reply form
                 var newComment = document.querySelector(`#comment-${response.commentId}`);
-                newStarButton = newComment.querySelector('.comment-star-button');
-                newForm = newComment.querySelector('.comment-form')
+                var newStarButton = newComment.querySelector('.comment-star-button');
+                var newForm = newComment.querySelector('.comment-form')
                 initCommentStarButton(newStarButton);
                 initCommentForm(newForm);
 

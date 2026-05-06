@@ -2,7 +2,7 @@ import { getCSRFToken, getPageData, BASE_URL } from './api.js';
 import { initPageStarButtons } from './pages.js';
 import { initComments } from './comments.js';
 
-async function refresh() {
+async function pageInfo() {
 
     var pageData = await getPageData();
     var csrfToken = await getCSRFToken();
@@ -22,19 +22,15 @@ async function refresh() {
         })
         .then(response => response.json())
         .then(response => {
-            if (response.status === "200") {
-                document.body.innerHTML = response.html
-                initBootstrapTooltips();
-                initLinks();
-                initRefreshButton();
-                initForumLink();
-                initChatLink();
-                initPageStarButtons();
-                initComments();
-            }
-            else if (response.status === "405"){
-                document.body.innerHTML = response.html
-            }
+            document.body.innerHTML = response.html
+            initBootstrapTooltips();
+            initLinks();
+            initRefreshButton();
+            initPageInfoLink();
+            initForumLink();
+            initChatLink();
+            initPageStarButtons();
+            initComments();
         })
     }
     catch {
@@ -50,7 +46,7 @@ export async function refreshOnReady() {
     function maybeRefresh() {
         if (!refreshed) {
             refreshed = true;
-            refresh();
+            pageInfo();
         }
     }
     chrome.tabs.onUpdated.addListener(function listener(tabId, info) {
@@ -86,19 +82,15 @@ async function forum() {
         })
         .then(response => response.json())
         .then(response => {
-            if (response.status === "200") {
-                document.body.innerHTML = response.html
-                initBootstrapTooltips();
-                initLinks();
-                initRefreshButton();
-                initForumLink();
-                initChatLink();
-                initPageStarButtons();
-                initComments();
-            }
-            else if (response.status === "403" || response.status === "404"){
-                document.body.innerHTML = response.html
-            }
+            document.body.innerHTML = response.html
+            initBootstrapTooltips();
+            initLinks();
+            initRefreshButton();
+            initPageInfoLink();
+            initForumLink();
+            initChatLink();
+            initPageStarButtons();
+            initComments();
         })
     }
     catch {
@@ -126,19 +118,15 @@ async function chat() {
         })
         .then(response => response.json())
         .then(response => {
-            if (response.status === "200") {
                 document.body.innerHTML = response.html
                 initBootstrapTooltips();
                 initLinks();
                 initRefreshButton();
+                initPageInfoLink();
                 initForumLink();
                 initChatLink();
                 initPageStarButtons();
                 initComments();
-            }
-            else if (response.status === "403" || response.status === "404"){
-                document.body.innerHTML = response.html
-            }
         })
     }
     catch {
@@ -151,6 +139,13 @@ function initRefreshButton() {
     const refreshButton = document.getElementById('refreshButton');
     refreshButton.addEventListener('click', (e) => {
         refreshOnReady();
+    })
+}
+
+function initPageInfoLink() {
+    const pageInfoLink = document.getElementById('pageInfoLink');
+    pageInfoLink.addEventListener('click', (e) => {
+        pageInfo();
     })
 }
 
