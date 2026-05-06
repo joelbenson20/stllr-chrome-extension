@@ -30,6 +30,7 @@ async function refresh() {
                 initForumLink();
                 initChatLink();
                 initPageStarButtons();
+                initComments();
             }
             else if (response.status === "405"){
                 document.body.innerHTML = response.html
@@ -93,6 +94,7 @@ async function forum() {
                 initForumLink();
                 initChatLink();
                 initPageStarButtons();
+                initComments();
             }
             else if (response.status === "403" || response.status === "404"){
                 document.body.innerHTML = response.html
@@ -132,6 +134,7 @@ async function chat() {
                 initForumLink();
                 initChatLink();
                 initPageStarButtons();
+                initComments();
             }
             else if (response.status === "403" || response.status === "404"){
                 document.body.innerHTML = response.html
