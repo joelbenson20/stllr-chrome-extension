@@ -1,3 +1,6 @@
+import { initPanelElements } from './index.js';
+
+
 export const BASE_URL = "http://127.0.0.1:8000/";
 
 const CSRF_TOKEN_PATH = 'extension/csrf-token/';
@@ -45,4 +48,32 @@ export async function getPageData() {
         head: result.head,
         innerText: result.innerText,
     };
+}
+
+export async function getContent(path) {
+    var pageData = await getPageData();
+    var csrfToken = await getCSRFToken();
+    if (!csrfToken) {
+        return
+    }
+
+    try {
+        fetch(BASE_URL + path, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken
+            },
+            credentials: 'include',
+            body: JSON.stringify({ pageData })
+        })
+        .then(response => response.json())
+        .then(response => {
+            document.body.innerHTML = response.html
+            initPanelElements()
+        })
+    }
+    catch {
+        document.body.innerHTML = "Stllr's web server is not responding."
+    }
 }

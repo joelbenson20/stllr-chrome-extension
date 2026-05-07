@@ -1,4 +1,4 @@
-import { BASE_URL } from './api.js'
+import { BASE_URL } from '../../api.js'
 
 const PAGE_STAR_PATH = 'page/star/';
 
@@ -22,7 +22,6 @@ export function initPageStarButtons() {
             .then(response => response.json())
             .then(data => {
 
-                console.log(data);
                 if (data['status'] === '200') {
 
                     var previousAction = starButton.dataset.action;
