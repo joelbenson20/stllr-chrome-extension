@@ -1,4 +1,4 @@
-import { BASE_URL } from './api.js'
+import { BASE_URL } from '../../api.js'
 
 const COMMENT_STAR_PATH = 'comments/star/';
 const POST_COMMENT_PATH = 'comments/post/';
