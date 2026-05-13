@@ -1,17 +1,16 @@
 import { BASE_URL, getContent } from './api.js';
-import { initPageStarButtons } from './libs/stllr/pages.js';
-import { initComments } from './libs/stllr/comments.js';
+import { indexView } from './views.js';
 
 
-async function initOnReady() {
+export async function initOnReady() {
     renderLoadingSpinner();
     var inited = false;
 
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-    function maybeRefresh() {
+    async function maybeRefresh() {
         if (!inited) {
             inited = true;
-            getContent('extension/');
+            indexView();
         }
     }
 
@@ -36,58 +35,6 @@ function renderLoadingSpinner() {
             <span class="visually-hidden">Loading...</span>
         </div>
     </div>`
-}
-
-export function initPanelElements() {
-    initViewButtons();
-    initLinks();
-    initBootstrapTooltips();
-    initPageStarButtons();
-    initComments();
-}
-
-function initViewButtons() {
-    const refreshButton = document.getElementById('refreshButton');
-    refreshButton.addEventListener('click', (e) => {
-        initOnReady();
-    })
-    const forumLink = document.getElementById('forumLink');
-    forumLink.addEventListener('click', (e) => {
-        getContent('extension/forum/');
-    })
-    const chatLink = document.getElementById('relayLink');
-    chatLink.addEventListener('click', (e) => {
-        getContent('extension/relay/');
-    })
-    const similarLink = document.getElementById('similarLink');
-    similarLink.addEventListener('click', (e) => {
-        getContent('extension/similar/');
-    })
-}
-
-function initLinks() {
-    document.body.addEventListener('click', (e) => {
-        const anchor = e.target.closest('a[href]');
-        if (!anchor){
-            return
-        }
-        const href = anchor.getAttribute('href');
-        if (!href || href.startsWith('#')){
-            return
-        }
-        e.preventDefault();
-        chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-        chrome.tabs.update(tabs[0].id, { url: href });
-    });
-})}
-
-function initBootstrapTooltips() {
-    const tooltipTriggerList = document.querySelectorAll(
-        '[data-bs-toggle="tooltip"]',
-    );
-    const tooltipList = [...tooltipTriggerList].map(
-        (tooltipTriggerEl) => new bootstrap.Tooltip(tooltipTriggerEl),
-    );
 }
 
 initOnReady();

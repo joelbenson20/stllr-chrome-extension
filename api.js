@@ -1,9 +1,8 @@
-import { initPanelElements } from './index.js';
-
-
+export const BASE_HOST = "127.0.0.1:8000";
 export const BASE_URL = "http://127.0.0.1:8000/";
 
-const CSRF_TOKEN_PATH = 'extension/csrf-token/';
+const CSRF_TOKEN_PATH = 'api/csrf-token/';
+const WS_TICKET_PATH = 'api/ws-ticket/';
 
 export async function getCSRFToken() {
     try {
@@ -12,13 +11,23 @@ export async function getCSRFToken() {
             credentials: "include",
         });
         const data = await response.json();
-        if (data.status === '200') {
-            return data.csrfToken;
-        } else if (data.status === '401') {
-            document.body.innerHTML = data.html;
-        }
+        return data.csrfToken
     } catch {
-        document.body.innerHTML = "<p>Failed to connect to the server.</p>";
+        console.log('Failed to get CSRF token.')
+        return null;
+    }
+}
+
+export async function getWSTicket() {
+    try {
+        const response = await fetch(BASE_URL + WS_TICKET_PATH, {
+            method: "GET",
+            credentials: "include",
+        });
+        const data = await response.json();
+        return data.ticket
+    } catch {
+        console.log('Failed to get WebSocket ticket.')
         return null;
     }
 }
@@ -58,7 +67,7 @@ export async function getContent(path) {
     }
 
     try {
-        fetch(BASE_URL + path, {
+        const response = await fetch(BASE_URL + path, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -66,12 +75,9 @@ export async function getContent(path) {
             },
             credentials: 'include',
             body: JSON.stringify({ pageData })
-        })
-        .then(response => response.json())
-        .then(response => {
-            document.body.innerHTML = response.html
-            initPanelElements()
-        })
+        });
+        const data = await response.json();
+        return data.html;
     }
     catch {
         document.body.innerHTML = "Stllr's web server is not responding."

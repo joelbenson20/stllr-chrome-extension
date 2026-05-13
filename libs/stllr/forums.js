@@ -1,7 +1,7 @@
 import { BASE_URL } from '../../api.js'
 
-const COMMENT_STAR_PATH = 'comments/star/';
-const POST_COMMENT_PATH = 'comments/post/';
+const COMMENT_STAR_PATH = 'forums/star/';
+const POST_COMMENT_PATH = 'forums/post/';
 const MARKDOWNIFY_PATH = 'api/markdownify/';
 
 
@@ -158,7 +158,7 @@ function initmarkdownEditButton(button) {
     initmarkdownEditButton(markdownEditButton);
 }
 
- export function initComments() {
+ export function initForum() {
 
     // Initialize star buttons
     var commentStarButtons = document.querySelectorAll('.comment-star-button');
