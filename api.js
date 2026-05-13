@@ -63,11 +63,12 @@ export async function getContent(path) {
     var pageData = await getPageData();
     var csrfToken = await getCSRFToken();
     if (!csrfToken) {
-        return
+        return "Please log in to use Stllr.";
     }
 
     try {
-        const response = await fetch(BASE_URL + path, {
+        console.log('Fetching: ' + BASE_URL + path);
+        var response = await fetch(BASE_URL + path, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -76,10 +77,10 @@ export async function getContent(path) {
             credentials: 'include',
             body: JSON.stringify({ pageData })
         });
-        const data = await response.json();
-        return data.html;
+        response = await response.json();
+        return response.html;
     }
     catch {
-        document.body.innerHTML = "Stllr's web server is not responding."
+        return "Stllr's web server is not responding.";
     }
 }

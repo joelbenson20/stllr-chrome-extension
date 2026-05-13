@@ -1,7 +1,7 @@
 import { BASE_URL } from '../../api.js'
 
-const COMMENT_STAR_PATH = 'forums/star/';
-const POST_COMMENT_PATH = 'forums/post/';
+const STAR_COMMENT_PATH = 'api/star/comment/';
+const CREATE_COMMENT_PATH = 'api/create/comment/';
 const MARKDOWNIFY_PATH = 'api/markdownify/';
 
 
@@ -15,7 +15,7 @@ function initFormSubmission(form) {
             headers: {'X-CSRFToken': csrfToken},
             body: formData
         }
-        fetch(BASE_URL + POST_COMMENT_PATH, options)
+        fetch(BASE_URL + CREATE_COMMENT_PATH, options)
         .then(response => response.json())
         .then(response => {
             if (response.status === '201') {
@@ -68,7 +68,7 @@ function initCommentStarButton(button) {
                 mode: 'same-origin',
                 body: formData
             }
-            fetch(BASE_URL + COMMENT_STAR_PATH, options)
+            fetch(BASE_URL + STAR_COMMENT_PATH, options)
             .then(response => response.json())
             .then(data => {
                 if (data['status'] === '200') {

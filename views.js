@@ -5,26 +5,26 @@ import { initForum } from './libs/stllr/forums.js';
 import { initRoom } from './libs/stllr/rooms.js';
 
 export async function indexView() {
-    document.body.innerHTML = await getContent('extension/');
+    document.body.innerHTML = await getContent('extension/?tab=forum');
     initElements();
     initForum();
 }
 
  async function forumView() {
-    document.body.innerHTML = await getContent('extension/forum/');
+    document.body.innerHTML = await getContent('extension/?tab=forum');
     initElements();
     initForum();
  }
 
  async function roomView() {
-    document.body.innerHTML = await getContent('extension/room/');
+    document.body.innerHTML = await getContent('extension/?tab=room');
     initElements();
     await initRoom();
  }
 
 
  async function similarView() {
-    document.body.innerHTML = await getContent('extension/similar/');
+    document.body.innerHTML = await getContent('extension/?tab=similar');
     initElements();
  }
 

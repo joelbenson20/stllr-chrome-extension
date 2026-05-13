@@ -1,6 +1,6 @@
 import { BASE_URL } from '../../api.js'
 
-const PAGE_STAR_PATH = 'page/star/';
+const PAGE_STAR_PATH = 'api/star/page/';
 
 export function initPageStarButtons() {
 
