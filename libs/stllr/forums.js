@@ -1,10 +1,3 @@
-import { BASE_URL } from '../../api.js'
-
-const STAR_COMMENT_PATH = 'api/star/comment/';
-const CREATE_COMMENT_PATH = 'api/create/comment/';
-const MARKDOWNIFY_PATH = 'api/markdownify/';
-
-
 function initFormSubmission(form) {
     form.addEventListener('submit', (e) => {
         e.preventDefault();
@@ -15,7 +8,7 @@ function initFormSubmission(form) {
             headers: {'X-CSRFToken': csrfToken},
             body: formData
         }
-        fetch(BASE_URL + CREATE_COMMENT_PATH, options)
+        fetch(form.action, options)
         .then(response => response.json())
         .then(response => {
             if (response.status === '201') {
@@ -67,7 +60,7 @@ function initCommentStarButton(button) {
                 mode: 'same-origin',
                 body: formData
             }
-            fetch(BASE_URL + STAR_COMMENT_PATH, options)
+            fetch(new URL(button.dataset.endpoint, document.baseURI).href, options)
             .then(response => response.json())
             .then(data => {
                 if (data['status'] === '200') {
@@ -100,7 +93,7 @@ function initmarkdownPreviewButton(button) {
             headers: {'X-CSRFToken': csrfToken},
             body: formData
         }
-         fetch(BASE_URL + MARKDOWNIFY_PATH, options)
+         fetch(new URL(button.dataset.endpoint, document.baseURI).href, options)
         .then(response => response.json())
         .then(response => {
             if (response.status === '200') {

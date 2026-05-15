@@ -1,42 +1,18 @@
 import { BASE_URL, getContent } from './api.js';
 import { indexView } from './views.js';
 
+renderLoadingSpinner();
+
 // Refresh panel when a new pageData value is written to session storage
 chrome.storage.onChanged.addListener((changes, area) => {
     if (area === 'session' && changes.pageData?.newValue) {
-        initOnReady()
+        indexView();
     }
 })
 // If session storage is already set, fall back to 'get' method
 chrome.storage.session.get('pageData').then(({ pageData }) => {
-    if (pageData) initOnReady();
+    if (pageData) indexView();
 })
-
-export async function initOnReady() {
-    renderLoadingSpinner();
-    var inited = false;
-
-    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-    async function maybeRefresh() {
-        if (!inited) {
-            inited = true;
-            indexView();
-        }
-    }
-
-    chrome.tabs.onUpdated.addListener(function listener(tabId, info) {
-        if (tabId === tab.id && info.status === 'complete') {
-            chrome.tabs.onUpdated.removeListener(listener);
-            maybeRefresh();
-        }
-    });
-
-    // Re-check in case the tab finished loading between the query and the listener being attached
-    const [currentTab] = await chrome.tabs.query({ active: true, currentWindow: true });
-    if (currentTab.status === 'complete') {
-        maybeRefresh();
-    }
-}
 
 function renderLoadingSpinner() {
     document.body.innerHTML = `

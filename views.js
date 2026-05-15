@@ -1,5 +1,4 @@
 import { getContent } from './api.js';
-import { initOnReady } from './panel.js';
 import { initPages } from './libs/stllr/pages.js';
 import { initForum } from './libs/stllr/forums.js';
 import { initRoom } from './libs/stllr/rooms.js';
@@ -30,11 +29,6 @@ export async function indexView() {
 
 function initElements() {
 
-    // Initialize extension tabs
-    const refreshButton = document.getElementById('refreshButton');
-    refreshButton.addEventListener('click', (e) => {
-        initOnReady();
-    })
     const forumLink = document.getElementById('forumLink');
     forumLink.addEventListener('click', async (e) => {
         forumView();

@@ -1,12 +1,20 @@
 import { BASE_HOST, getWSTicket } from '../../api.js'
 
+let activeRoomSocket = null;
+
 export async function initRoom() {
+
+    if (activeRoomSocket && activeRoomSocket.readyState !== WebSocket.CLOSED) {
+        activeRoomSocket.close();
+    }
 
     const data = document.getElementById('stllr-data').dataset;
     const pageId = data.pageId;
     const ticket = await getWSTicket();
     const url = 'ws://' + BASE_HOST + `/ws/room/${pageId}/?ticket=${ticket}`;
     const roomSocket = new WebSocket(url);
+    activeRoomSocket = roomSocket;
+    // END EXTENSION-SPECIFIC CODE
 
     const messageTextarea = document.querySelector('.message-textarea');
     const messageFeed = document.querySelector('.message-feed');
@@ -26,8 +34,9 @@ export async function initRoom() {
     roomSocket.onmessage = function(event) {
         const data = JSON.parse(event.data);
         if (data.type === "room_message") {
+            const isAtBottom = messageFeed.scrollHeight - messageFeed.scrollTop <= messageFeed.clientHeight + 10;
             messageFeed.innerHTML += data.html
-            messageFeed.scrollTop = messageFeed.scrollHeight;
+            if (isAtBottom) messageFeed.scrollTop = messageFeed.scrollHeight;
         }
         else if (data.type === "presence_update") {
             const roomInfoButton = document.querySelector('#roomInfoButton');

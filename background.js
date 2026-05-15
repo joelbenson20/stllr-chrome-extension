@@ -6,21 +6,26 @@ chrome.action.onClicked.addListener(async (tab) => {
     // Open the side panel for the current tab
     await chrome.sidePanel.open({ tabId: tab.id });
 
-    // Read page data and store it before notifying the panel
-    const [{ result }] = await chrome.scripting.executeScript({
-        target: { tabId: tab.id },
-        func: () => ({
-            head: document.head.innerHTML,
-            innerText: document.documentElement.innerText
-        })
-    });
-    await chrome.storage.session.set({
-        pageData: {
-            url: tab.url,
-            title: tab.title,
-            favIconUrl: tab.favIconUrl,
-            head: result.head,
-            innerText: result.innerText
-        }
-    });
+    try {
+        const [{ result }] = await chrome.scripting.executeScript({
+            target: { tabId: tab.id },
+            func: async () => {
+                if (document.readyState === 'loading') {
+                    await new Promise(resolve => document.addEventListener('DOMContentLoaded', resolve));
+                }
+                return { head: document.head.innerHTML, innerText: document.documentElement.innerText };
+            }
+        });
+        await chrome.storage.session.set({
+            pageData: {
+                url: tab.url,
+                title: tab.title,
+                favIconUrl: tab.favIconUrl,
+                head: result.head,
+                innerText: result.innerText
+            }
+        });
+    } catch (e) {
+        // Tab navigated away or is a restricted page (chrome://, extensions, etc.)
+    }
 })

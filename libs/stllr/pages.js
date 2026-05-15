@@ -1,8 +1,3 @@
-import { BASE_URL } from '../../api.js'
-
-const PAGE_STAR_PATH = 'api/star/page/';
-const ROOM_COUNT_PATH = 'api/count/room/'
-
 function initPageStarButtons() {
 
     const pageStarButtons = document.querySelectorAll('.page-star-button')
@@ -19,7 +14,7 @@ function initPageStarButtons() {
                 mode: 'same-origin',
                 body: formData
             }
-            fetch(BASE_URL + PAGE_STAR_PATH, options)
+            fetch(new URL(starButton.dataset.endpoint, document.baseURI).href, options)
             .then(response => response.json())
             .then(data => {
                 if (data['status'] === '200') {
@@ -45,7 +40,7 @@ async function fetchRoomCounts() {
     const spans = document.querySelectorAll('.room-user-count[data-page-id]');
     if (!spans.length) return;
     const ids = [...spans].map(s => s.dataset.pageId).join(',');
-    const data = await fetch(BASE_URL + ROOM_COUNT_PATH + `?ids=${ids}`).then(r => r.json());
+    const data = await fetch(new URL(spans[0].dataset.endpoint + `?ids=${ids}`, document.baseURI).href).then(r => r.json());
     spans.forEach(s => {
         const count = data[s.dataset.pageId];
         if (count !== undefined) s.textContent = count;

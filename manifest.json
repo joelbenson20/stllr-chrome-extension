@@ -1,8 +1,8 @@
 {
     "manifest_version": 3,
-    "name": "stllr - dev",
+    "name": "stllr",
     "version": "1.0",
-    "description": "The Universal Forum - Dev",
+    "description": "the universal forum",
     "side_panel": {
         "default_title": "stllr",
         "default_path": "panel.html",
