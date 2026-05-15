@@ -1,6 +1,16 @@
 import { BASE_URL, getContent } from './api.js';
 import { indexView } from './views.js';
 
+// Refresh panel when a new pageData value is written to session storage
+chrome.storage.onChanged.addListener((changes, area) => {
+    if (area === 'session' && changes.pageData?.newValue) {
+        initOnReady()
+    }
+})
+// If session storage is already set, fall back to 'get' method
+chrome.storage.session.get('pageData').then(({ pageData }) => {
+    if (pageData) initOnReady();
+})
 
 export async function initOnReady() {
     renderLoadingSpinner();
@@ -36,5 +46,3 @@ function renderLoadingSpinner() {
         </div>
     </div>`
 }
-
-initOnReady();

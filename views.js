@@ -1,6 +1,6 @@
 import { getContent } from './api.js';
-import { initOnReady } from './index.js';
-import { initPageStarButtons } from './libs/stllr/pages.js';
+import { initOnReady } from './panel.js';
+import { initPages } from './libs/stllr/pages.js';
 import { initForum } from './libs/stllr/forums.js';
 import { initRoom } from './libs/stllr/rooms.js';
 
@@ -64,7 +64,7 @@ function initElements() {
         })
     })
 
-    // Initialize bootstrap tooltips
+    // Initialize bootstrap elements
     const tooltipTriggerList = document.querySelectorAll(
         '[data-bs-toggle="tooltip"]',
     );
@@ -72,7 +72,12 @@ function initElements() {
         (tooltipTriggerEl) => new bootstrap.Tooltip(tooltipTriggerEl),
     );
 
-    // Initialize page star buttons
-    initPageStarButtons();
+    const popoverTriggerList = document.querySelectorAll('[data-bs-toggle="popover"]')
+    const popoverList = [...popoverTriggerList].map(
+        (popoverTriggerEl) => new bootstrap.Popover(popoverTriggerEl, {trigger: 'hover'})
+    );
+
+    // Initialize page buttons
+    initPages();
 
 }

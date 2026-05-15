@@ -32,42 +32,15 @@ export async function getWSTicket() {
     }
 }
 
-export async function getPageData() {
-    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-    
-    const [{ result }] = await chrome.scripting.executeScript({
-        target: { tabId: tab.id },
-        func: () => {
-            const readMeta = (property) =>
-                document.querySelector(`meta[property="${property}"]`)?.content ||
-                document.querySelector(`meta[name="${property}"]`)?.content ||
-                null;
-
-            return {
-                head: document.head.innerHTML,
-                innerText: document.documentElement.innerText
-            };
-        },
-    });
-
-    return {
-        url: tab.url,
-        title: tab.title,
-        favIconUrl: tab.favIconUrl,
-        head: result.head,
-        innerText: result.innerText,
-    };
-}
 
 export async function getContent(path) {
-    var pageData = await getPageData();
+    var { pageData } = await chrome.storage.session.get('pageData');
     var csrfToken = await getCSRFToken();
     if (!csrfToken) {
-        return "Please log in to use Stllr.";
+        return "Please log in to use Stllr. (Or our server is down.)";
     }
 
     try {
-        console.log('Fetching: ' + BASE_URL + path);
         var response = await fetch(BASE_URL + path, {
             method: 'POST',
             headers: {

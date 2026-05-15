@@ -1,34 +1,59 @@
 import { BASE_HOST, getWSTicket } from '../../api.js'
 
 export async function initRoom() {
+
     const data = document.getElementById('stllr-data').dataset;
     const pageId = data.pageId;
     const ticket = await getWSTicket();
     const url = 'ws://' + BASE_HOST + `/ws/room/${pageId}/?ticket=${ticket}`;
     const roomSocket = new WebSocket(url);
-    const roomInput = document.getElementById('roomInput');
-    const roomFeed = document.getElementById('roomFeed');
 
-    roomInput.addEventListener('input', () => {
-        roomInput.style.height = 'auto';
-        roomInput.style.height = roomInput.scrollHeight + 'px';
-    })
+    const messageTextarea = document.querySelector('.message-textarea');
+    const messageFeed = document.querySelector('.message-feed');
+
+    roomSocket.onopen = function() {
+        const heartbeat = setInterval(() => {
+            if (roomSocket.readyState === WebSocket.OPEN) {
+                roomSocket.send(JSON.stringify({ type: 'ping' }));
+            } else {
+                clearInterval(heartbeat)
+            }
+        }, 10000)
+
+        roomSocket.addEventListener('close', () => clearInterval(heartbeat))
+    }
 
     roomSocket.onmessage = function(event) {
         const data = JSON.parse(event.data);
-        roomFeed.innerHTML += data.html
-        roomFeed.scrollTop = roomFeed.scrollHeight;
+        if (data.type === "room_message") {
+            messageFeed.innerHTML += data.html
+            messageFeed.scrollTop = messageFeed.scrollHeight;
+        }
+        else if (data.type === "presence_update") {
+            const roomInfoButton = document.querySelector('#roomInfoButton');
+            const roomUserCount = document.querySelector('#roomUserCount');
+            const popover = bootstrap.Popover.getInstance(roomInfoButton);
+            
+            const listHtml = data.users.map(u => `<li class="list-group-item">${u}</li>`).join('');
+            const contentHtml = `<ul class="list-group list-group-flush">${listHtml}</ul>`;
+            
+            roomUserCount.innerText = data.count
+            popover.setContent({
+                '.popover-header': 'Users present',
+                '.popover-body': contentHtml,
+            });
+        }
     };
 
-    roomInput.addEventListener('keydown', function(event) {
+    messageTextarea.addEventListener('keydown', function(event) {
         if (event.key === 'Enter') {
             event.preventDefault();
-            const content = roomInput.value;
+            const content = messageTextarea.value;
             if (content) {
-                roomSocket.send(JSON.stringify({'content': content}));
-                roomInput.value = '';
-                roomInput.style.height = 'auto';
-                roomInput.focus();
+                roomSocket.send(JSON.stringify({ content: content }));
+                messageTextarea.value = '';
+                messageTextarea.style.height = 'auto';
+                messageTextarea.focus();
             }
         }
     })
@@ -37,5 +62,10 @@ export async function initRoom() {
         console.error('Room socket closed unexpectedly');
     };
 
-    roomInput.focus();
+    messageTextarea.addEventListener('input', () => {
+        messageTextarea.style.height = 'auto';
+        messageTextarea.style.height = messageTextarea.scrollHeight + 'px';
+    })
+
+    messageTextarea.focus();
 }
