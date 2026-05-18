@@ -1,6 +1,13 @@
-import { BASE_HOST, getWSTicket } from '../../api.js'
+import { STLLR_URL, fetchWSTicket } from '../../client.js'
 
 let activeRoomSocket = null;
+
+export function closeRoomSocket() {
+    if (activeRoomSocket && activeRoomSocket.readyState !== WebSocket.CLOSED) {
+        activeRoomSocket.close();
+        activeRoomSocket = null;
+    }
+}
 
 export async function initRoom() {
 
@@ -10,8 +17,8 @@ export async function initRoom() {
 
     const data = document.getElementById('stllr-data').dataset;
     const pageId = data.pageId;
-    const ticket = await getWSTicket();
-    const url = 'ws://' + BASE_HOST + `/ws/room/${pageId}/?ticket=${ticket}`;
+    const ticket = await fetchWSTicket();
+    const url = STLLR_URL.replace(/^http/, 'ws') + `/ws/room/${pageId}/?ticket=${ticket}`;
     const roomSocket = new WebSocket(url);
     activeRoomSocket = roomSocket;
     // END EXTENSION-SPECIFIC CODE
@@ -39,18 +46,14 @@ export async function initRoom() {
             if (isAtBottom) messageFeed.scrollTop = messageFeed.scrollHeight;
         }
         else if (data.type === "presence_update") {
-            const roomInfoButton = document.querySelector('#roomInfoButton');
-            const roomUserCount = document.querySelector('#roomUserCount');
-            const popover = bootstrap.Popover.getInstance(roomInfoButton);
-            
+            const popover = bootstrap.Popover.getInstance(roomUsersPopover);
             const listHtml = data.users.map(u => `<li class="list-group-item">${u}</li>`).join('');
             const contentHtml = `<ul class="list-group list-group-flush">${listHtml}</ul>`;
-            
-            roomUserCount.innerText = data.count
-            popover.setContent({
+                        popover.setContent({
                 '.popover-header': 'Users present',
                 '.popover-body': contentHtml,
             });
+            updateRoomCounts()
         }
     };
 
@@ -77,4 +80,15 @@ export async function initRoom() {
     })
 
     messageTextarea.focus();
+}
+
+async function updateRoomCounts() {
+    const spans = document.querySelectorAll('.room-user-count[data-page-id]');
+    if (!spans.length) return;
+    const ids = [...spans].map(s => s.dataset.pageId).join(',');
+    const data = await fetch(new URL(spans[0].dataset.endpoint + `?ids=${ids}`, document.baseURI).href).then(r => r.json());
+    spans.forEach(s => {
+        const count = data[s.dataset.pageId];
+        if (count !== undefined) s.textContent = count;
+    });
 }

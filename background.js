@@ -1,7 +1,7 @@
 chrome.action.onClicked.addListener(async (tab) => {
 
     // Clear old page data
-    chrome.storage.session.remove('pageData');
+    chrome.storage.session.remove('page');
 
     // Open the side panel for the current tab
     await chrome.sidePanel.open({ tabId: tab.id });
@@ -17,15 +17,23 @@ chrome.action.onClicked.addListener(async (tab) => {
             }
         });
         await chrome.storage.session.set({
-            pageData: {
-                url: tab.url,
-                title: tab.title,
-                favIconUrl: tab.favIconUrl,
-                head: result.head,
-                innerText: result.innerText
+            page: {
+                restricted: false,
+                data: {
+                    url: tab.url,
+                    title: tab.title,
+                    favIconUrl: tab.favIconUrl,
+                    head: result.head,
+                    innerText: result.innerText
+                }
             }
         });
     } catch (e) {
-        // Tab navigated away or is a restricted page (chrome://, extensions, etc.)
+        await chrome.storage.session.set({
+            page: { 
+                restricted: true ,
+                data: null
+            }
+        })
     }
 })

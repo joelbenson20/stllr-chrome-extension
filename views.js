@@ -1,54 +1,70 @@
-import { getContent } from './api.js';
+import { STLLR_URL, fetchView } from './client.js';
 import { initPages } from './libs/stllr/pages.js';
 import { initForum } from './libs/stllr/forums.js';
-import { initRoom } from './libs/stllr/rooms.js';
+import { initRoom, closeRoomSocket } from './libs/stllr/rooms.js';
+
+
+export async function loadingView() {
+    document.body.innerHTML = await fetchView('/extension/loading/');
+}
+
+export async function restrictedView() {
+    document.body.innerHTML = await fetchView('/extension/restricted/');
+}
 
 export async function indexView() {
-    document.body.innerHTML = await getContent('extension/?tab=forum');
-    initElements();
-    initForum();
+    document.body.innerHTML = await fetchView('/extension/');
+    init();
+    initForum(); // Defaults to forum
 }
 
  async function forumView() {
-    document.body.innerHTML = await getContent('extension/?tab=forum');
-    initElements();
+    document.body.innerHTML = await fetchView('/extension/?tab=forum');
+    init();
     initForum();
  }
 
  async function roomView() {
-    document.body.innerHTML = await getContent('extension/?tab=room');
-    initElements();
+    document.body.innerHTML = await fetchView('/extension/?tab=room');
+    init();
     await initRoom();
  }
 
-
  async function similarView() {
-    document.body.innerHTML = await getContent('extension/?tab=similar');
-    initElements();
+    document.body.innerHTML = await fetchView('/extension/?tab=similar');
+    init();
  }
 
-function initElements() {
+function init() {
 
-    const forumLink = document.getElementById('forumLink');
-    forumLink.addEventListener('click', async (e) => {
+    // Close room socket if open
+    closeRoomSocket();
+
+    // Initalize tab buttons
+    const forumTab = document.getElementById('forumTab');
+    forumTab.addEventListener('click', async (e) => {
         forumView();
     })
-    const roomLink = document.getElementById('roomLink');
-    roomLink.addEventListener('click', async (e) => {
+    const roomTab = document.getElementById('roomTab');
+    roomTab.addEventListener('click', async (e) => {
         roomView();
     })
-    const similarLink = document.getElementById('similarLink');
-    similarLink.addEventListener('click', async (e) => {
+    const similarTab = document.getElementById('similarTab');
+    similarTab.addEventListener('click', async (e) => {
         similarView();
     })
 
-    // Initialize links to redirect current tab
+    // Initialize stllr elements
+    initPages();
+
+    // Initialize external links
     document.body.addEventListener('click', (e) => {
         const anchor = e.target.closest('a[href]');
         if (!anchor) {
             return
         }
-        const href = anchor.getAttribute('href');
+        const raw = anchor.getAttribute('href');
+        const href = raw.startsWith('http') ? raw : STLLR_URL + raw;
         if (!href || href.startsWith('#')) {
             return
         }
@@ -70,8 +86,5 @@ function initElements() {
     const popoverList = [...popoverTriggerList].map(
         (popoverTriggerEl) => new bootstrap.Popover(popoverTriggerEl, {trigger: 'hover'})
     );
-
-    // Initialize page buttons
-    initPages();
 
 }

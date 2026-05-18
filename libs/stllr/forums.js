@@ -12,21 +12,21 @@ function initFormSubmission(form) {
         .then(response => response.json())
         .then(response => {
             if (response.status === '201') {
-                var commentTree = document.querySelector('.comment-tree');
+                var postTree = document.querySelector('#postFeed');
                 var parentId = form.querySelector('[name=parent]').value
                 if (parentId) {
-                    commentTree = document.querySelector(`#children-${parentId}`);
+                    postTree = document.querySelector(`#children${parentId}`);
                 }
-                commentTree.insertAdjacentHTML('afterbegin', response.comment);
+                postTree.insertAdjacentHTML('afterbegin', response.post);
 
                 // Initialize new reply form
-                var newComment = document.querySelector(`#comment-${response.commentId}`);
-                var newStarButton = newComment.querySelector('.comment-star-button');
-                var newForm = newComment.querySelector('.comment-form')
-                initCommentStarButton(newStarButton);
-                initCommentForm(newForm);
+                var newPost = document.querySelector(`#post${response.postId}`);
+                var newStarButton = newPost.querySelector('.post-star-button');
+                var newForm = newPost.querySelector('.post-form')
+                initPostStarButton(newStarButton);
+                initPostForm(newForm);
 
-                // Close form container for threaded comments
+                // Close form container for threaded posts
                 if (parentId) {
                     var parentFormContainer = document.querySelector(`#reply-form-container-${parentId}`);
                     parentFormContainer.classList.remove('show');
@@ -34,7 +34,7 @@ function initFormSubmission(form) {
 
                 // Reset and close the form
                 form.reset();
-                var cancelButton = form.querySelector('.comment-cancel-button');
+                var cancelButton = form.querySelector('.post-cancel-button');
             }
         })
         .catch(error => console.error('Error:', error))
@@ -48,7 +48,7 @@ function initFormSubmission(form) {
     })
 }
 
-function initCommentStarButton(button) {
+function initPostStarButton(button) {
     button.addEventListener('click', (e) => {
             e.preventDefault();
             var formData = new FormData()
@@ -82,10 +82,10 @@ function initCommentStarButton(button) {
 
 function initmarkdownPreviewButton(button) {
     button.addEventListener('click', (e) => {
-        var form = button.closest('.comment-form');
+        var form = button.closest('.post-form');
         var csrfToken = form.querySelector('[name=csrfmiddlewaretoken]').value;
         
-        var textarea = form.querySelector('.comment-form-textarea');
+        var textarea = form.querySelector('.post-form-textarea');
         var formData = new FormData();
         formData.append('content', textarea.value);
         var options = {
@@ -98,8 +98,8 @@ function initmarkdownPreviewButton(button) {
         .then(response => {
             if (response.status === '200') {
 
-                var markdownEditButton = form.querySelector('.comment-form-markdown-edit-button');
-                var markdownPreviewContainer = form.querySelector('.comment-form-markdown-preview-container');
+                var markdownEditButton = form.querySelector('.post-form-markdown-edit-button');
+                var markdownPreviewContainer = form.querySelector('.post-form-markdown-preview-container');
 
                 markdownPreviewContainer.innerHTML = response.markdown;
                 button.style.display = 'none';
@@ -116,10 +116,10 @@ function initmarkdownPreviewButton(button) {
 function initmarkdownEditButton(button) {
     button.addEventListener('click', (e) => {
         e.preventDefault();
-        var form = button.closest('.comment-form');
-        var markdownPreviewButton = form.querySelector('.comment-form-markdown-preview-button');
-        var textarea = form.querySelector('.comment-form-textarea');
-        var markdownPreviewContainer = form.querySelector('.comment-form-markdown-preview-container');
+        var form = button.closest('.post-form');
+        var markdownPreviewButton = form.querySelector('.post-form-markdown-preview-button');
+        var textarea = form.querySelector('.post-form-textarea');
+        var markdownPreviewContainer = form.querySelector('.post-form-markdown-preview-container');
 
         // Hide preview container and edit button, show edit container and preview button
         markdownPreviewContainer.innerHTML = '';
@@ -135,12 +135,12 @@ function initmarkdownEditButton(button) {
     })
 }
 
- function initCommentForm(form) {
+ function initPostForm(form) {
     initFormSubmission(form);
 
     var replyFormContainer = form.closest('.reply-form-container');
-    var markdownPreviewButton = form.querySelector('.comment-form-markdown-preview-button');
-    var markdownEditButton = form.querySelector('.comment-form-markdown-edit-button');
+    var markdownPreviewButton = form.querySelector('.post-form-markdown-preview-button');
+    var markdownEditButton = form.querySelector('.post-form-markdown-edit-button');
 
     if (replyFormContainer) initReplyAutoFocus(replyFormContainer);
     initmarkdownPreviewButton(markdownPreviewButton);
@@ -150,19 +150,19 @@ function initmarkdownEditButton(button) {
  export function initForum() {
 
     // Initialize star buttons
-    var commentStarButtons = document.querySelectorAll('.comment-star-button');
-    commentStarButtons.forEach(button => {
-        initCommentStarButton(button);
+    var postStarButtons = document.querySelectorAll('.post-star-button');
+    postStarButtons.forEach(button => {
+        initPostStarButton(button);
     })
 
-    // Initialize comment forms
-    var commentForms = document.querySelectorAll('.comment-form');
-    commentForms.forEach(form => {
-        initCommentForm(form)
+    // Initialize post forms
+    var postForms = document.querySelectorAll('.post-form');
+    postForms.forEach(form => {
+        initPostForm(form)
     })
 
     // Focus in root form
-    var rootCommentForm = document.querySelectorAll('.comment-form')[0];
-    rootCommentForm.querySelector('textarea').focus();
+    var rootPostForm = document.querySelectorAll('.post-form')[0];
+    rootPostForm.querySelector('textarea').focus();
 
  }
