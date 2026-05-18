@@ -1,8 +1,4 @@
-import { BASE_URL } from '../../api.js'
-
-const PAGE_STAR_PATH = 'page/star/';
-
-export function initPageStarButtons() {
+function initPageStarButtons() {
 
     const pageStarButtons = document.querySelectorAll('.page-star-button')
 
@@ -18,10 +14,9 @@ export function initPageStarButtons() {
                 mode: 'same-origin',
                 body: formData
             }
-            fetch(BASE_URL + PAGE_STAR_PATH, options)
+            fetch(new URL(starButton.dataset.endpoint, document.baseURI).href, options)
             .then(response => response.json())
             .then(data => {
-
                 if (data['status'] === '200') {
 
                     var previousAction = starButton.dataset.action;
@@ -39,4 +34,20 @@ export function initPageStarButtons() {
             })
         })
     })
+}
+
+async function fetchRoomCounts() {
+    const spans = document.querySelectorAll('.room-user-count[data-page-id]');
+    if (!spans.length) return;
+    const ids = [...spans].map(s => s.dataset.pageId).join(',');
+    const data = await fetch(new URL(spans[0].dataset.endpoint + `?ids=${ids}`, document.baseURI).href).then(r => r.json());
+    spans.forEach(s => {
+        const count = data[s.dataset.pageId];
+        if (count !== undefined) s.textContent = count;
+    });
+}
+
+export function initPages() {
+    initPageStarButtons();
+    fetchRoomCounts();
 }
