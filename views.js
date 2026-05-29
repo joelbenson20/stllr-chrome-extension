@@ -70,8 +70,12 @@ function init() {
         }
         e.preventDefault();
         chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-            chrome.tabs.update(tabs[0].id, { url: href });
-        })
+            if (anchor.target === '_blank') {
+                chrome.tabs.create({ url: href, openerTabId: tabs[0].id });
+            } else {
+                chrome.tabs.update(tabs[0].id, { url: href });
+            }
+        });
     })
 
     // Initialize bootstrap elements
