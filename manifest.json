@@ -1,7 +1,7 @@
 {
     "manifest_version": 3,
     "name": "stllr",
-    "version": "2.0",
+    "version": "1.1",
     "description": "the universal forum",
     "side_panel": {
         "default_title": "stllr",

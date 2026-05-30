@@ -1,0 +1,31 @@
+:root {
+    --night-sky: #060d1a;
+    --star-light: #a594d0;
+}
+
+body {
+    background-color: var(--night-sky);
+    color: var(--star-light);
+}
+
+.glow-expand {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background-color: var(--star-light);
+    animation: glow-expand 5s ease-out forwards;
+}
+
+@keyframes glow-expand {
+    0%   { opacity: 1; box-shadow: none; }
+    100% { opacity: 1; box-shadow: 0 0 300px 300px var(--star-light); }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
+body.fade-in {
+    animation: fadeIn 375ms ease-in forwards;
+}
