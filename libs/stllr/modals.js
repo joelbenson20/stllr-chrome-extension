@@ -55,6 +55,18 @@ function initShareModal() {
     });
 }
 
+function initRoomUsersModal() {
+    const modal = document.getElementById('roomUsersModal');
+    if (!modal) return;
+
+    modal.addEventListener('show.bs.modal', function() {
+        const users = JSON.parse(modal.dataset.users || '[]');
+        const list = document.getElementById('roomUsersList');
+        list.innerHTML = users.map(u => `<li class="list-group-item">${u}</li>`).join('');
+    });
+}
+
 export function initModals() {
     initShareModal();
+    initRoomUsersModal();
 }

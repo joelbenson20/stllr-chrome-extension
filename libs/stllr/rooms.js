@@ -45,15 +45,11 @@ export async function initRoom() {
             messageFeed.innerHTML += data.html
             if (isAtBottom) messageFeed.scrollTop = messageFeed.scrollHeight;
         }
+        // Done by Claude, requires review
         else if (data.type === "presence_update") {
-            const popover = bootstrap.Popover.getInstance(roomUsersPopover);
-            const listHtml = data.users.map(u => `<li class="list-group-item">${u}</li>`).join('');
-            const contentHtml = `<ul class="list-group list-group-flush">${listHtml}</ul>`;
-                        popover.setContent({
-                '.popover-header': 'Users present',
-                '.popover-body': contentHtml,
-            });
-            updateRoomCounts()
+            const modal = document.getElementById('roomUsersModal');
+            if (modal) modal.dataset.users = JSON.stringify(data.users);
+            updateRoomCounts();
         }
     };
 
