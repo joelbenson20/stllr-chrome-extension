@@ -7,11 +7,14 @@ chrome.action.onClicked.addListener(async (tab) => {
     await chrome.sidePanel.open({ tabId: tab.id });
 
     try {
+
+        // Inject Mozilla Readability JS
         await chrome.scripting.executeScript({
             target: { tabId: tab.id },
             files: ['libs/readability/Readability.js']
         });
 
+        // Get page metadata after load
         const [{ result }] = await chrome.scripting.executeScript({
             target: { tabId: tab.id },
             func: async () => {
@@ -42,6 +45,7 @@ chrome.action.onClicked.addListener(async (tab) => {
                         .join('\n\n');
                 }
 
+                // og:metadata
                 const siteName =
                     meta('og:site_name') ||
                     null;
@@ -93,6 +97,7 @@ chrome.action.onClicked.addListener(async (tab) => {
             }
         });
     } catch (e) {
+        // If failure, page is restricted
         await chrome.storage.session.set({
             page: { 
                 restricted: true ,

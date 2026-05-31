@@ -1,4 +1,6 @@
-import { STLLR_URL, fetchWSTicket } from '../../client.js'
+import { STLLR_URL, fetchWSTicket } from '../../client.js';
+const wsBase = STLLR_URL.replace(/^http/, 'ws');
+const fetchTicket = fetchWSTicket;
 
 let activeRoomSocket = null;
 
@@ -11,21 +13,19 @@ export function closeRoomSocket() {
 
 export async function initRoom() {
 
-    const messageTextarea = document.querySelector('.message-textarea');
-    const messageFeed = document.querySelector('.message-feed');
-    if (!messageFeed) return;
+    const broadcastTextarea = document.querySelector('.broadcast-textarea');
+    const broadcastFeed = document.querySelector('.broadcast-feed');
+    if (!broadcastFeed || !broadcastTextarea) return;
 
     if (activeRoomSocket && activeRoomSocket.readyState !== WebSocket.CLOSED) {
         activeRoomSocket.close();
     }
 
-    const data = document.getElementById('stllr-data').dataset;
-    const pageId = data.pageId;
-    const ticket = await fetchWSTicket();
-    const url = STLLR_URL.replace(/^http/, 'ws') + `/ws/room/${pageId}/?ticket=${ticket}`;
+    const pageId = broadcastFeed.dataset.pageId;
+    const ticket = fetchTicket ? await fetchTicket() : null;
+    const url = wsBase + '/ws/room/' + pageId + '/' + (ticket ? `?ticket=${ticket}` : '');
     const roomSocket = new WebSocket(url);
     activeRoomSocket = roomSocket;
-    // END EXTENSION-SPECIFIC CODE
 
     roomSocket.onopen = function() {
         const heartbeat = setInterval(() => {
@@ -42,11 +42,10 @@ export async function initRoom() {
     roomSocket.onmessage = function(event) {
         const data = JSON.parse(event.data);
         if (data.type === "room_message") {
-            const isAtBottom = messageFeed.scrollHeight - messageFeed.scrollTop <= messageFeed.clientHeight + 10;
-            messageFeed.innerHTML += data.html
-            if (isAtBottom) messageFeed.scrollTop = messageFeed.scrollHeight;
+            const isAtBottom = broadcastFeed.scrollHeight - broadcastFeed.scrollTop <= broadcastFeed.clientHeight + 10;
+            broadcastFeed.innerHTML += data.html
+            if (isAtBottom) broadcastFeed.scrollTop = broadcastFeed.scrollHeight;
         }
-        // Done by Claude, requires review
         else if (data.type === "presence_update") {
             const modal = document.getElementById('roomUsersModal');
             if (modal) modal.dataset.users = JSON.stringify(data.users);
@@ -54,15 +53,14 @@ export async function initRoom() {
         }
     };
 
-    messageTextarea.addEventListener('keydown', function(event) {
+    broadcastTextarea.addEventListener('keydown', function(event) {
         if (event.key === 'Enter') {
             event.preventDefault();
-            const content = messageTextarea.value;
+            const content = broadcastTextarea.value;
             if (content) {
                 roomSocket.send(JSON.stringify({ content: content }));
-                messageTextarea.value = '';
-                messageTextarea.style.height = 'auto';
-                messageTextarea.focus();
+                broadcastTextarea.value = '';
+                broadcastTextarea.focus();
             }
         }
     })
@@ -71,12 +69,7 @@ export async function initRoom() {
         console.error('Room socket closed unexpectedly');
     };
 
-    messageTextarea.addEventListener('input', () => {
-        messageTextarea.style.height = 'auto';
-        messageTextarea.style.height = messageTextarea.scrollHeight + 'px';
-    })
-
-    messageTextarea.focus();
+    broadcastTextarea.focus();
 }
 
 async function updateRoomCounts() {

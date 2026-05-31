@@ -6,7 +6,6 @@ function initPageStarButtons() {
         starButton.addEventListener('click', function(e) {
             e.preventDefault();
             var formData = new FormData();
-            formData.append('id', starButton.dataset.id)
             formData.append('action', starButton.dataset.action);
             var options = {
                 method: 'POST',

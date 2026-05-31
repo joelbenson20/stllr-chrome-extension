@@ -1,5 +1,7 @@
 import { loadingView, restrictedView, indexView } from './views.js';
 
+
+// Set loading view
 await loadingView();
 
 // Index view when a new page value is written to session storage

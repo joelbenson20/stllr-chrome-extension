@@ -5,15 +5,22 @@ import { initRoom, closeRoomSocket } from './libs/stllr/rooms.js';
 import { initModals } from './libs/stllr/modals.js';
 
 
+let _loadingPromise = null; // Track loading status
+
 export async function loadingView() {
-    document.body.innerHTML = `
-        <div class="d-flex justify-content-center align-items-center vh-100">
-            <div class="glow-expand" role="status">
-                <span class="visually-hidden">Loading...</span>
+    if (_loadingPromise) return _loadingPromise;
+    _loadingPromise = (async () => {
+        document.body.innerHTML = `
+            <div class="d-flex justify-content-center align-items-center vh-100">
+                <div class="glow-expand" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
             </div>
-        </div>
-    `;
-    await new Promise(resolve => setTimeout(resolve, 750));
+        `;
+        await new Promise(resolve => setTimeout(resolve, 750));
+        _loadingPromise = null;
+    })();
+    return _loadingPromise;
 }
 
 export async function restrictedView() {
@@ -53,15 +60,15 @@ function init() {
 
     // Initalize tab buttons
     const forumTab = document.getElementById('forumTab');
-    forumTab.addEventListener('click', async (e) => {
+    forumTab?.addEventListener('click', async (e) => {
         forumView();
     })
     const roomTab = document.getElementById('roomTab');
-    roomTab.addEventListener('click', async (e) => {
+    roomTab?.addEventListener('click', async (e) => {
         roomView();
     })
     const similarTab = document.getElementById('similarTab');
-    similarTab.addEventListener('click', async (e) => {
+    similarTab?.addEventListener('click', async (e) => {
         similarView();
     })
 
