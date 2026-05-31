@@ -1,4 +1,4 @@
-export const STLLR_URL = 'http://127.0.0.1:8000';
+export const STLLR_URL = 'https://stllr.io';
 
 const CSRF_TOKEN_PATH = '/extension/csrf-token/';
 const WS_TICKET_PATH = '/extension/ws-ticket/';
@@ -45,15 +45,14 @@ export async function fetchWSTicket() {
         const data = await response.json();
         return data.ticket
     } catch {
-        console.log('Failed to fetch WebSocket ticket.')
         return null;
     }
 }
 
 export async function fetchView(path) {
 
-    var csrfToken;
-    var response = await fetchCSRFToken();
+    let csrfToken;
+    const response = await fetchCSRFToken();
     if (!response.ok) {
         return response.html;
     }

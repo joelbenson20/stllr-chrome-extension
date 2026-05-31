@@ -15,5 +15,5 @@ chrome.storage.onChanged.addListener(async (changes, area) => {
 
 // Or if page is already set in storage
 chrome.storage.session.get('page').then(({ page }) => {
-    page.restricted ? restrictedView() : indexView()
+    if (page) page.restricted ? restrictedView() : indexView();
 })
