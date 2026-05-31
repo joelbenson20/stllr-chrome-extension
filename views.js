@@ -1,11 +1,26 @@
 import { STLLR_URL, fetchView } from './client.js';
 import { initPages } from './libs/stllr/pages.js';
-import { initForum } from './libs/stllr/forums.js';
+import { initForums } from './libs/stllr/forums.js';
 import { initRoom, closeRoomSocket } from './libs/stllr/rooms.js';
+import { initModals } from './libs/stllr/modals.js';
 
+
+let _loadingPromise = null; // Track loading status
 
 export async function loadingView() {
-    document.body.innerHTML = await fetchView('/extension/loading/');
+    if (_loadingPromise) return _loadingPromise;
+    _loadingPromise = (async () => {
+        document.body.innerHTML = `
+            <div class="d-flex justify-content-center align-items-center vh-100">
+                <div class="glow-expand" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            </div>
+        `;
+        await new Promise(resolve => setTimeout(resolve, 750));
+        _loadingPromise = null;
+    })();
+    return _loadingPromise;
 }
 
 export async function restrictedView() {
@@ -14,14 +29,17 @@ export async function restrictedView() {
 
 export async function indexView() {
     document.body.innerHTML = await fetchView('/extension/');
+    document.body.classList.remove('fade-in');
+    void document.body.offsetWidth;
+    document.body.classList.add('fade-in');
     init();
-    initForum(); // Defaults to forum
+    initForums(); // Defaults to forum
 }
 
  async function forumView() {
     document.body.innerHTML = await fetchView('/extension/?tab=forum');
     init();
-    initForum();
+    initForums();
  }
 
  async function roomView() {
@@ -42,23 +60,33 @@ function init() {
 
     // Initalize tab buttons
     const forumTab = document.getElementById('forumTab');
-    forumTab.addEventListener('click', async (e) => {
+    forumTab?.addEventListener('click', async (e) => {
         forumView();
     })
     const roomTab = document.getElementById('roomTab');
-    roomTab.addEventListener('click', async (e) => {
+    roomTab?.addEventListener('click', async (e) => {
         roomView();
     })
     const similarTab = document.getElementById('similarTab');
-    similarTab.addEventListener('click', async (e) => {
+    similarTab?.addEventListener('click', async (e) => {
         similarView();
     })
 
+    // Initialize bootstrap elements
+    const tooltipTriggerList = document.querySelectorAll(
+        '[data-bs-toggle="tooltip"]',
+    );
+    const tooltipList = [...tooltipTriggerList].map(
+        (tooltipTriggerEl) => new bootstrap.Tooltip(tooltipTriggerEl),
+    );
+
     // Initialize stllr elements
     initPages();
+    initModals();
 
     // Initialize external links
     document.body.addEventListener('click', (e) => {
+        if (e.defaultPrevented) return;
         const anchor = e.target.closest('a[href]');
         if (!anchor) {
             return
@@ -70,21 +98,12 @@ function init() {
         }
         e.preventDefault();
         chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-            chrome.tabs.update(tabs[0].id, { url: href });
-        })
+            if (anchor.target === '_blank') {
+                chrome.tabs.create({ url: href, openerTabId: tabs[0].id });
+            } else {
+                chrome.tabs.update(tabs[0].id, { url: href });
+            }
+        });
     })
-
-    // Initialize bootstrap elements
-    const tooltipTriggerList = document.querySelectorAll(
-        '[data-bs-toggle="tooltip"]',
-    );
-    const tooltipList = [...tooltipTriggerList].map(
-        (tooltipTriggerEl) => new bootstrap.Tooltip(tooltipTriggerEl),
-    );
-
-    const popoverTriggerList = document.querySelectorAll('[data-bs-toggle="popover"]')
-    const popoverList = [...popoverTriggerList].map(
-        (popoverTriggerEl) => new bootstrap.Popover(popoverTriggerEl, {trigger: 'hover'})
-    );
 
 }

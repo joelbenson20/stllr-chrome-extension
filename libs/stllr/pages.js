@@ -6,7 +6,6 @@ function initPageStarButtons() {
         starButton.addEventListener('click', function(e) {
             e.preventDefault();
             var formData = new FormData();
-            formData.append('id', starButton.dataset.id)
             formData.append('action', starButton.dataset.action);
             var options = {
                 method: 'POST',
@@ -36,6 +35,31 @@ function initPageStarButtons() {
     })
 }
 
+function initPinButtons() {
+    document.querySelectorAll('.page-pin-button').forEach(button => {
+        button.addEventListener('click', function (e) {
+            e.preventDefault();
+            const formData = new FormData();
+            formData.append('id', button.dataset.pageId);
+            formData.append('action', button.dataset.action);
+            fetch(new URL(button.dataset.endpoint, document.baseURI).href, {
+                method: 'POST',
+                headers: { 'X-CSRFToken': button.dataset.csrfToken },
+                mode: 'same-origin',
+                body: formData,
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data['status'] === '200') {
+                    const isPinning = button.dataset.action === 'pin';
+                    button.dataset.action = isPinning ? 'unpin' : 'pin';
+                    button.querySelector('span').textContent = isPinning ? 'Remove Pin' : 'Pin page';
+                }
+            });
+        });
+    });
+}
+
 async function fetchRoomCounts() {
     const spans = document.querySelectorAll('.room-user-count[data-page-id]');
     if (!spans.length) return;
@@ -47,7 +71,17 @@ async function fetchRoomCounts() {
     });
 }
 
+function initPageCardLink(card) {
+    card.addEventListener('click', e => {
+        if (!e.target.closest('a, button, form')) {
+            window.location.href = card.dataset.forumUrl;
+        }
+    });
+}
+
 export function initPages() {
     initPageStarButtons();
+    initPinButtons();
     fetchRoomCounts();
+    document.querySelectorAll('.page[data-forum-url]').forEach(initPageCardLink);
 }
