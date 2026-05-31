@@ -11,6 +11,10 @@ export function closeRoomSocket() {
 
 export async function initRoom() {
 
+    const messageTextarea = document.querySelector('.message-textarea');
+    const messageFeed = document.querySelector('.message-feed');
+    if (!messageFeed) return;
+
     if (activeRoomSocket && activeRoomSocket.readyState !== WebSocket.CLOSED) {
         activeRoomSocket.close();
     }
@@ -22,9 +26,6 @@ export async function initRoom() {
     const roomSocket = new WebSocket(url);
     activeRoomSocket = roomSocket;
     // END EXTENSION-SPECIFIC CODE
-
-    const messageTextarea = document.querySelector('.message-textarea');
-    const messageFeed = document.querySelector('.message-feed');
 
     roomSocket.onopen = function() {
         const heartbeat = setInterval(() => {

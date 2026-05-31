@@ -1,6 +1,6 @@
 import { STLLR_URL, fetchView } from './client.js';
 import { initPages } from './libs/stllr/pages.js';
-import { initForum } from './libs/stllr/forums.js';
+import { initForums } from './libs/stllr/forums.js';
 import { initRoom, closeRoomSocket } from './libs/stllr/rooms.js';
 import { initModals } from './libs/stllr/modals.js';
 
@@ -26,13 +26,13 @@ export async function indexView() {
     void document.body.offsetWidth;
     document.body.classList.add('fade-in');
     init();
-    initForum(); // Defaults to forum
+    initForums(); // Defaults to forum
 }
 
  async function forumView() {
     document.body.innerHTML = await fetchView('/extension/?tab=forum');
     init();
-    initForum();
+    initForums();
  }
 
  async function roomView() {
