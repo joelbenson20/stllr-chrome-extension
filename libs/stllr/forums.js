@@ -146,15 +146,23 @@ function initMuteButton(button) {
         .then(data => {
             if (data.status === '200') {
                 const isMuting = button.dataset.action === 'mute';
-                button.dataset.action = isMuting ? 'unmute' : 'mute';
-                const span = button.querySelector('span');
-                const username = span.textContent.replace(/^(Mute|Unmute) /, '');
-                span.textContent = `${isMuting ? 'Unmute' : 'Mute'} ${username}`;
-                const postEl = button.closest('.post');
-                if (postEl) {
+                const authorId = button.closest('.post')?.dataset.authorId;
+
+                // Toggle content visibility on all posts by this author
+                document.querySelectorAll(`.post[data-author-id="${authorId}"]`).forEach(postEl => {
                     postEl.querySelector('.post-content')?.classList.toggle('d-none', isMuting);
                     postEl.querySelector('.post-content-muted')?.classList.toggle('d-none', !isMuting);
-                }
+                });
+
+                // Update all mute buttons for this author
+                document.querySelectorAll('.post-mute-button').forEach(btn => {
+                    if (btn.closest('.post')?.dataset.authorId === authorId) {
+                        btn.dataset.action = isMuting ? 'unmute' : 'mute';
+                        const span = btn.querySelector('span');
+                        const username = span.textContent.replace(/^(Mute|Unmute) /, '');
+                        span.textContent = `${isMuting ? 'Unmute' : 'Mute'} ${username}`;
+                    }
+                });
             }
         });
     });
