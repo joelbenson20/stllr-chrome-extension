@@ -27,13 +27,17 @@ export async function restrictedView() {
     document.body.innerHTML = await fetchView('/extension/restricted/');
 }
 
-export async function indexView() {
+export async function indexView() { // Defaults to frame view
     document.body.innerHTML = await fetchView('/extension/');
     document.body.classList.remove('fade-in');
     void document.body.offsetWidth;
     document.body.classList.add('fade-in');
     init();
-    initForums(); // Defaults to forum
+}
+
+async function frameView() {
+    document.body.innerHTML = await fetchView('/extension/?tab=frame');
+    init();
 }
 
  async function forumView() {
@@ -59,6 +63,11 @@ function init() {
     closeRoomSocket();
 
     // Initalize tab buttons
+    const frameTab = document.getElementById('frameTab');
+    frameTab?.addEventListener('click', async (e) => {
+        frameView();
+    })
+
     const forumTab = document.getElementById('forumTab');
     forumTab?.addEventListener('click', async (e) => {
         forumView();
@@ -78,6 +87,9 @@ function init() {
     );
     const tooltipList = [...tooltipTriggerList].map(
         (tooltipTriggerEl) => new bootstrap.Tooltip(tooltipTriggerEl),
+    );
+    document.querySelectorAll('[data-bs-toggle="popover"]').forEach(
+    (el) => new bootstrap.Popover(el),
     );
 
     // Initialize stllr elements

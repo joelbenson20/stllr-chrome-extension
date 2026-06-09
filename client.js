@@ -1,4 +1,4 @@
-export const STLLR_URL = 'https://stllr.io';
+export const STLLR_URL = 'http://127.0.0.1:8000';
 
 const CSRF_TOKEN_PATH = '/extension/csrf-token/';
 const WS_TICKET_PATH = '/extension/ws-ticket/';

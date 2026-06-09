@@ -27,7 +27,8 @@
         "storage"
     ],
     "host_permissions": [
-        "https://stllr.io/*"
+        "https://stllr.io/*",
+        "http://127.0.0.1:8000/*"
     ],
     "icons": {
         "16": "icons/icon16.png",
