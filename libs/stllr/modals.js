@@ -37,9 +37,8 @@ function initShareModal() {
             mode: 'same-origin',
             body: formData,
         })
-        .then(r => r.json())
-        .then(data => {
-            if (data.status === '200') {
+        .then(response => {
+            if (response.ok) {
                 btn.classList.replace('btn-outline-secondary', 'btn-success');
                 statusEl.innerHTML = '<i class="bi bi-check-lg"></i>';
             } else {

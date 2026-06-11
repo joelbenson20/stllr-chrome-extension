@@ -28,16 +28,15 @@ function initMarkdownToggle(form) {
             headers: {'X-CSRFToken': csrfToken},
             body: formData
         })
-        .then(r => r.json())
-        .then(response => {
-            if (response.status === '200') {
-                previewContainer.innerHTML = response.markdown;
-                previewContainer.style.display = 'block';
-                previewButton.style.display = 'none';
-                editButton.style.display = 'block';
-                textarea.style.display = 'none';
-                if (submitButton) submitButton.disabled = true;
-            }
+        .then(response => response.ok ? response.json() : null)
+        .then(data => {
+            if (!data) return;
+            previewContainer.innerHTML = data.markdown;
+            previewContainer.style.display = 'block';
+            previewButton.style.display = 'none';
+            editButton.style.display = 'block';
+            textarea.style.display = 'none';
+            if (submitButton) submitButton.disabled = true;
         });
     });
 
@@ -66,35 +65,33 @@ function initFormSubmission(form) {
             body: formData
         }
         fetch(form.dataset.endpoint, options)
-        .then(response => response.json())
-        .then(response => {
-            if (response.status === '201') {
-                var postTree = document.querySelector('#postFeed');
-                var parentId = form.querySelector('[name=parent]').value
-                if (parentId) {
-                    postTree = document.querySelector(`#children${parentId}`);
-                }
-                postTree.insertAdjacentHTML('afterbegin', response.post);
-
-                // Initialize new reply form
-                var newPost = document.querySelector(`#post${response.postId}`);
-                var newStarButton = newPost.querySelector('.post-star-button');
-                var newForm = newPost.querySelector('.reply-form')
-                initPostStarButton(newStarButton);
-                initPostForm(newForm);
-                initPostCardLink(newPost);
-
-                // Close form container for threaded posts
-                if (parentId) {
-                    document.querySelector(`#replyForm${parentId}`)?.classList.remove('show');
-                    var replyCountSpan = document.querySelector(`#post${parentId} .children-count`);
-                    if (replyCountSpan) replyCountSpan.textContent = parseInt(replyCountSpan.textContent) + 1;
-                }
-
-                // Reset and close the form
-                form.reset();
-                var cancelButton = form.querySelector('.post-cancel-button');
+        .then(response => response.ok ? response.json() : null)
+        .then(data => {
+            if (!data) return;
+            var postTree = document.querySelector('#postFeed');
+            var parentId = form.querySelector('[name=parent]').value
+            if (parentId) {
+                postTree = document.querySelector(`#replies${parentId}`);
             }
+            postTree.insertAdjacentHTML('afterbegin', data.post);
+
+            // Initialize new reply form
+            var newPost = document.querySelector(`#post${data.postId}`);
+            var newStarButton = newPost.querySelector('.post-star-button');
+            var newForm = newPost.querySelector('.reply-form')
+            initPostStarButton(newStarButton);
+            initPostForm(newForm);
+            initPostCardLink(newPost);
+
+            // Close form container for threaded posts
+            if (parentId) {
+                document.querySelector(`#replyForm${parentId}`)?.classList.remove('show');
+                var replyCountSpan = document.querySelector(`#post${parentId} .children-count`);
+                if (replyCountSpan) replyCountSpan.textContent = parseInt(replyCountSpan.textContent) + 1;
+            }
+
+            // Reset and close the form
+            form.reset();
         })
         .catch(error => console.error('Error:', error))
     })
@@ -113,21 +110,19 @@ function initPostStarButton(button) {
                 body: formData
             }
             fetch(new URL(button.dataset.endpoint, document.baseURI).href, options)
-            .then(response => response.json())
-            .then(data => {
-                if (data['status'] === '200') {
-                    var previousAction = button.dataset.action;
-                    var newAction = previousAction === 'star' ? 'unstar' : 'star';
-                    button.dataset.action = newAction
+            .then(response => {
+                if (!response.ok) return;
+                var previousAction = button.dataset.action;
+                var newAction = previousAction === 'star' ? 'unstar' : 'star';
+                button.dataset.action = newAction;
 
-                    var starCount = button.querySelector('.star-count');
-                    var previousCount = parseInt(starCount.textContent);
-                    starCount.textContent = previousAction === 'star' ? previousCount + 1 : previousCount - 1;
+                var starCount = button.querySelector('.star-count');
+                var previousCount = parseInt(starCount.textContent);
+                starCount.textContent = previousAction === 'star' ? previousCount + 1 : previousCount - 1;
 
-                    var icon = button.querySelector('i');
-                    icon.classList.toggle('bi-star-fill')
-                    icon.classList.toggle('bi-star');
-                }
+                var icon = button.querySelector('i');
+                icon.classList.toggle('bi-star-fill');
+                icon.classList.toggle('bi-star');
             })
         })
 }
@@ -142,28 +137,26 @@ function initMuteButton(button) {
             mode: 'same-origin',
             body: formData,
         })
-        .then(r => r.json())
-        .then(data => {
-            if (data.status === '200') {
-                const isMuting = button.dataset.action === 'mute';
-                const authorId = button.closest('.post')?.dataset.authorId;
+        .then(response => {
+            if (!response.ok) return;
+            const isMuting = button.dataset.action === 'mute';
+            const authorId = button.closest('.post')?.dataset.authorId;
 
-                // Toggle content visibility on all posts by this author
-                document.querySelectorAll(`.post[data-author-id="${authorId}"]`).forEach(postEl => {
-                    postEl.querySelector('.post-content')?.classList.toggle('d-none', isMuting);
-                    postEl.querySelector('.post-content-muted')?.classList.toggle('d-none', !isMuting);
-                });
+            // Toggle content visibility on all posts by this author
+            document.querySelectorAll(`.post[data-author-id="${authorId}"]`).forEach(postEl => {
+                postEl.querySelector('.post-content')?.classList.toggle('d-none', isMuting);
+                postEl.querySelector('.post-content-muted')?.classList.toggle('d-none', !isMuting);
+            });
 
-                // Update all mute buttons for this author
-                document.querySelectorAll('.post-mute-button').forEach(btn => {
-                    if (btn.closest('.post')?.dataset.authorId === authorId) {
-                        btn.dataset.action = isMuting ? 'unmute' : 'mute';
-                        const span = btn.querySelector('span');
-                        const username = span.textContent.replace(/^(Mute|Unmute) /, '');
-                        span.textContent = `${isMuting ? 'Unmute' : 'Mute'} ${username}`;
-                    }
-                });
-            }
+            // Update all mute buttons for this author
+            document.querySelectorAll('.post-mute-button').forEach(btn => {
+                if (btn.closest('.post')?.dataset.authorId === authorId) {
+                    btn.dataset.action = isMuting ? 'unmute' : 'mute';
+                    const span = btn.querySelector('span');
+                    const username = span.textContent.replace(/^(Mute|Unmute) /, '');
+                    span.textContent = `${isMuting ? 'Unmute' : 'Mute'} ${username}`;
+                }
+            });
         });
     });
 }

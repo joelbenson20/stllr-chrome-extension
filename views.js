@@ -27,12 +27,13 @@ export async function restrictedView() {
     document.body.innerHTML = await fetchView('/extension/restricted/');
 }
 
-export async function indexView() { // Defaults to frame view
+export async function indexView() { // Defaults to forum view
     document.body.innerHTML = await fetchView('/extension/');
     document.body.classList.remove('fade-in');
     void document.body.offsetWidth;
     document.body.classList.add('fade-in');
     init();
+    initForums();
 }
 
 async function frameView() {
