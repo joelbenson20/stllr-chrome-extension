@@ -1,6 +1,7 @@
 import { STLLR_URL, fetchView } from './client.js';
 import { initPages } from './libs/stllr/pages.js';
 import { initForums } from './libs/stllr/forums.js';
+import { initStarButtons } from './libs/stllr/stars.js';
 import { initRoom, closeRoomSocket } from './libs/stllr/rooms.js';
 import { initModals } from './libs/stllr/modals.js';
 
@@ -95,6 +96,7 @@ function init() {
 
     // Initialize stllr elements
     initPages();
+    initStarButtons();
     initModals();
 
     // Initialize external links

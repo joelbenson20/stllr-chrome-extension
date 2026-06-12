@@ -77,9 +77,7 @@ function initFormSubmission(form) {
 
             // Initialize new reply form
             var newPost = document.querySelector(`#post${data.postId}`);
-            var newStarButton = newPost.querySelector('.post-star-button');
             var newForm = newPost.querySelector('.reply-form')
-            initPostStarButton(newStarButton);
             initPostForm(newForm);
             initPostCardLink(newPost);
 
@@ -96,35 +94,6 @@ function initFormSubmission(form) {
         .catch(error => console.error('Error:', error))
     })
     
-}
-
-function initPostStarButton(button) {
-    button.addEventListener('click', (e) => {
-            e.preventDefault();
-            var formData = new FormData()
-            formData.append('action', button.dataset.action)
-            var options = {
-                method: 'POST',
-                headers: {'X-CSRFToken': button.dataset.csrfToken},
-                mode: 'same-origin',
-                body: formData
-            }
-            fetch(new URL(button.dataset.endpoint, document.baseURI).href, options)
-            .then(response => {
-                if (!response.ok) return;
-                var previousAction = button.dataset.action;
-                var newAction = previousAction === 'star' ? 'unstar' : 'star';
-                button.dataset.action = newAction;
-
-                var starCount = button.querySelector('.star-count');
-                var previousCount = parseInt(starCount.textContent);
-                starCount.textContent = previousAction === 'star' ? previousCount + 1 : previousCount - 1;
-
-                var icon = button.querySelector('i');
-                icon.classList.toggle('bi-star-fill');
-                icon.classList.toggle('bi-star');
-            })
-        })
 }
 
 function initMuteButton(button) {
@@ -171,12 +140,6 @@ function initReplyAutoFocus(form) {
 }
 
 export function initForums() {
-
-    // Star buttons
-    var postStarButtons = document.querySelectorAll('.post-star-button');
-    postStarButtons.forEach(button => {
-        initPostStarButton(button);
-    })
 
     // Post forms and reply forms
     document.querySelectorAll('.post-form, .reply-form').forEach(form => {
