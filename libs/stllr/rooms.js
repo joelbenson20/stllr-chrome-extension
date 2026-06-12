@@ -6,8 +6,15 @@ let activeRoomSocket = null;
 
 export function closeRoomSocket() {
     if (activeRoomSocket && activeRoomSocket.readyState !== WebSocket.CLOSED) {
+        const pageId = activeRoomSocket.url.match(/\/ws\/room\/(\d+)\//)?.[1];
         activeRoomSocket.close();
         activeRoomSocket = null;
+        if (pageId) {
+            document.querySelectorAll(`#page${pageId} .room-user-count`).forEach(el => {
+                const current = parseInt(el.textContent, 10);
+                if (!isNaN(current) && current > 0) el.textContent = current - 1;
+            });
+        }
     }
 }
 
