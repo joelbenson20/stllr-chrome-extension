@@ -1,148 +1,212 @@
-function initPostForm(form) {
-    initFormSubmission(form);
-    if (form.classList.contains('reply-form')) initReplyAutoFocus(form);
-    initMarkdownToggle(form);
-}
+// Markdown preview
+document.addEventListener('click', (e) => {
+    const button = e.target.closest('.markdown-preview-button');
+    if (!button) return;
+    const form = button.closest('form');
+    const textarea = form.querySelector('textarea');
+    const previewContainer = form.querySelector('.markdown-preview');
+    const editButton = form.querySelector('.markdown-edit-button');
+    const submitButton = form.querySelector('[type="submit"]');
+    const formData = new FormData();
+    formData.append('content', textarea.value);
+    fetch(new URL(button.dataset.endpoint, document.baseURI).href, {
+        method: 'POST',
+        headers: {'X-CSRFToken': form.querySelector('[name=csrfmiddlewaretoken]').value},
+        body: formData
+    })
+    .then(response => response.ok ? response.json() : null)
+    .then(data => {
+        if (!data) return;
+        previewContainer.innerHTML = data.markdown;
+        previewContainer.style.display = 'block';
+        button.style.display = 'none';
+        editButton.style.display = 'block';
+        textarea.style.display = 'none';
+        if (submitButton) submitButton.disabled = true;
+    });
+});
 
-function initMarkdownToggle(form) {
+// Markdown edit
+document.addEventListener('click', (e) => {
+    const button = e.target.closest('.markdown-edit-button');
+    if (!button) return;
+    e.preventDefault();
+    const form = button.closest('form');
     const textarea = form.querySelector('textarea');
     const previewContainer = form.querySelector('.markdown-preview');
     const previewButton = form.querySelector('.markdown-preview-button');
-    const editButton = form.querySelector('.markdown-edit-button');
     const submitButton = form.querySelector('[type="submit"]');
+    previewContainer.innerHTML = '';
+    previewContainer.style.display = 'none';
+    previewButton.style.display = 'block';
+    button.style.display = 'none';
+    textarea.style.display = 'block';
+    if (submitButton) submitButton.disabled = false;
+    const end = textarea.value.length;
+    textarea.focus();
+    textarea.setSelectionRange(end, end);
+});
 
-    previewButton.addEventListener('click', () => {
-        const csrfToken = form.querySelector('[name=csrfmiddlewaretoken]').value;
-        const formData = new FormData();
-        formData.append('content', textarea.value);
-        fetch(new URL(previewButton.dataset.endpoint, document.baseURI).href, {
-            method: 'POST',
-            headers: {'X-CSRFToken': csrfToken},
-            body: formData
-        })
-        .then(response => response.ok ? response.json() : null)
-        .then(data => {
-            if (!data) return;
-            previewContainer.innerHTML = data.markdown;
-            previewContainer.style.display = 'block';
-            previewButton.style.display = 'none';
-            editButton.style.display = 'block';
-            textarea.style.display = 'none';
-            if (submitButton) submitButton.disabled = true;
+// Mute button
+document.addEventListener('click', (e) => {
+    const button = e.target.closest('.post-mute-button');
+    if (!button) return;
+    const formData = new FormData();
+    formData.append('action', button.dataset.action);
+    fetch(new URL(button.dataset.endpoint, document.baseURI).href, {
+        method: 'POST',
+        headers: {'X-CSRFToken': button.dataset.csrfToken},
+        mode: 'same-origin',
+        body: formData,
+    })
+    .then(response => {
+        if (!response.ok) return;
+        const isMuting = button.dataset.action === 'mute';
+        const authorId = button.closest('.post')?.dataset.authorId;
+        document.querySelectorAll(`.post[data-author-id="${authorId}"]`).forEach(postEl => {
+            postEl.querySelector('.post-content')?.classList.toggle('d-none', isMuting);
+            postEl.querySelector('.post-content-muted')?.classList.toggle('d-none', !isMuting);
+        });
+        document.querySelectorAll('.post-mute-button').forEach(btn => {
+            if (btn.closest('.post')?.dataset.authorId !== authorId) return;
+            btn.dataset.action = isMuting ? 'unmute' : 'mute';
+            const span = btn.querySelector('span');
+            const username = span.textContent.replace(/^(Mute|Unmute) /, '');
+            span.textContent = `${isMuting ? 'Unmute' : 'Mute'} ${username}`;
         });
     });
+});
 
-    editButton.addEventListener('click', (e) => {
-        e.preventDefault();
-        previewContainer.innerHTML = '';
-        previewContainer.style.display = 'none';
-        previewButton.style.display = 'block';
-        editButton.style.display = 'none';
-        textarea.style.display = 'block';
-        if (submitButton) submitButton.disabled = false;
-        const end = textarea.value.length;
-        textarea.focus();
-        textarea.setSelectionRange(end, end);
-    });
-}
-
-function initFormSubmission(form) {
-    form.addEventListener('submit', (e) => {
-        e.preventDefault();
-        var formData = new FormData(form);
-        var csrfToken = form.querySelector('[name=csrfmiddlewaretoken]').value;
-        var options = {
-            method: 'POST',
-            headers: {'X-CSRFToken': csrfToken},
-            body: formData
-        }
-        fetch(form.dataset.endpoint, options)
-        .then(response => response.ok ? response.json() : null)
-        .then(data => {
-            if (!data) return;
-            var postTree = document.querySelector('#postFeed');
-            var parentId = form.querySelector('[name=parent]').value
-            if (parentId) {
-                postTree = document.querySelector(`#replies${parentId}`);
-            }
-            postTree.insertAdjacentHTML('afterbegin', data.post);
-
-            // Initialize new reply form
-            var newPost = document.querySelector(`#post${data.postId}`);
-            var newForm = newPost.querySelector('.reply-form')
-            initPostForm(newForm);
-            initPostCardLink(newPost);
-
-            // Close form container for threaded posts
-            if (parentId) {
-                document.querySelector(`#replyForm${parentId}`)?.classList.remove('show');
-                var replyCountSpan = document.querySelector(`#post${parentId} .descendant-count`);
-                if (replyCountSpan) replyCountSpan.textContent = parseInt(replyCountSpan.textContent) + 1;
-            }
-
-            // Reset and close the form
-            form.reset();
-        })
-        .catch(error => console.error('Error:', error))
+// Post form submission
+document.addEventListener('submit', (e) => {
+    const form = e.target.closest('.post-form, .reply-form');
+    if (!form) return;
+    e.preventDefault();
+    fetch(form.dataset.endpoint, {
+        method: 'POST',
+        headers: {'X-CSRFToken': form.querySelector('[name=csrfmiddlewaretoken]').value},
+        body: new FormData(form)
     })
-    
-}
+    .then(response => response.ok ? response.json() : null)
+    .then(data => {
+        if (!data) return;
+        const parentId = form.querySelector('[name=parent]').value;
+        const postTree = parentId
+            ? document.querySelector(`#children${parentId} .post-feed`)
+            : document.querySelector('.post-feed');
+        postTree.insertAdjacentHTML('afterbegin', data.post);
+        if (parentId) {
+            bootstrap.Collapse.getOrCreateInstance(document.querySelector(`#replyForm${parentId}`)).hide();
+            const replyCountSpan = document.querySelector(`#post${parentId} .descendant-count`);
+            if (replyCountSpan) replyCountSpan.textContent = parseInt(replyCountSpan.textContent) + 1;
+        }
+        form.reset();
+    })
+    .catch(error => console.error('Error:', error));
+});
 
-function initMuteButton(button) {
-    button.addEventListener('click', () => {
-        const formData = new FormData();
-        formData.append('action', button.dataset.action);
-        fetch(new URL(button.dataset.endpoint, document.baseURI).href, {
-            method: 'POST',
-            headers: {'X-CSRFToken': button.dataset.csrfToken},
-            mode: 'same-origin',
-            body: formData,
-        })
-        .then(response => {
-            if (!response.ok) return;
-            const isMuting = button.dataset.action === 'mute';
-            const authorId = button.closest('.post')?.dataset.authorId;
+// When reply form opens, also show children so the new post lands visibly
+document.addEventListener('show.bs.collapse', (e) => {
+    if (!e.target.id.startsWith('replyForm')) return;
+    const postId = e.target.id.replace('replyForm', '');
+    bootstrap.Collapse.getOrCreateInstance(document.querySelector(`#children${postId}`)).show();
+});
 
-            // Toggle content visibility on all posts by this author
-            document.querySelectorAll(`.post[data-author-id="${authorId}"]`).forEach(postEl => {
-                postEl.querySelector('.post-content')?.classList.toggle('d-none', isMuting);
-                postEl.querySelector('.post-content-muted')?.classList.toggle('d-none', !isMuting);
-            });
+// Tracks last valid user-typed content (after the @mention prefix) per textarea
+const replyUserContent = new WeakMap();
 
-            // Update all mute buttons for this author
-            document.querySelectorAll('.post-mute-button').forEach(btn => {
-                if (btn.closest('.post')?.dataset.authorId === authorId) {
-                    btn.dataset.action = isMuting ? 'unmute' : 'mute';
-                    const span = btn.querySelector('span');
-                    const username = span.textContent.replace(/^(Mute|Unmute) /, '');
-                    span.textContent = `${isMuting ? 'Unmute' : 'Mute'} ${username}`;
+// Reply auto-focus and @mention pre-fill
+document.addEventListener('shown.bs.collapse', (e) => {
+    const textarea = e.target.querySelector('.reply-form textarea');
+    if (!textarea) return;
+    const username = e.target.dataset.replyUsername;
+    if (username && !textarea.value.startsWith(`@${username} `)) {
+        textarea.value = `@${username} `;
+    }
+    replyUserContent.set(textarea, '');
+    textarea.focus();
+    textarea.setSelectionRange(textarea.value.length, textarea.value.length);
+});
+
+// Prevent deletion of the @mention prefix
+document.addEventListener('input', (e) => {
+    const textarea = e.target.closest('.reply-form textarea');
+    if (!textarea) return;
+    const collapseEl = textarea.closest('[data-reply-username]');
+    if (!collapseEl) return;
+    const prefix = `@${collapseEl.dataset.replyUsername} `;
+    if (textarea.value.startsWith(prefix)) {
+        replyUserContent.set(textarea, textarea.value.slice(prefix.length));
+    } else {
+        const saved = replyUserContent.get(textarea) || '';
+        textarea.value = prefix + saved;
+        textarea.setSelectionRange(prefix.length, prefix.length);
+    }
+});
+
+// Post feed
+function initPostFeed(feed) {
+    const feeder = feed.querySelector('.post-feeder');
+    let loading = false;
+    let intersecting = false;
+
+    const loadMore = (attempt = 0) => {
+        if (loading) return;
+        loading = true;
+        const params = new URLSearchParams();
+        params.set('page_id', feeder.dataset.pageId);
+        if (feeder.dataset.parentId) params.set('parent_id', feeder.dataset.parentId);
+        params.set('seed', feeder.dataset.seed);
+        params.set('p', feeder.dataset.p);
+        fetch(feeder.dataset.endpoint + '?' + params.toString())
+            .then(r => r.text())
+            .then(html => {
+                if (html === '') {
+                    feeder.remove();
+                } else {
+                    const tmp = document.createElement('div');
+                    tmp.innerHTML = html;
+                    const items = [...tmp.querySelectorAll('.post')];
+                    items.forEach((item, i) => {
+                        setTimeout(() => feeder.insertAdjacentElement('beforebegin', item), i * 80);
+                    });
+                    setTimeout(() => {
+                        feeder.dataset.p = parseInt(feeder.dataset.p) + 1;
+                        loading = false;
+                        if (intersecting) loadMore();
+                    }, items.length * 80);
+                }
+            })
+            .catch(() => {
+                loading = false;
+                if (attempt < 3) {
+                    const delay = 1000 * 2 ** attempt + Math.random() * 1000;
+                    setTimeout(() => loadMore(attempt + 1), delay);
                 }
             });
-        });
-    });
+    };
+
+    new IntersectionObserver(
+        entries => {
+            intersecting = entries[0].isIntersecting;
+            if (intersecting) loadMore();
+        },
+        { rootMargin: '300px' }
+    ).observe(feeder);
 }
 
-function initReplyAutoFocus(form) {
-    const collapseEl = form.closest('.collapse');
-    if (collapseEl) {
-        collapseEl.addEventListener('shown.bs.collapse', () => {
-            form.querySelector('textarea').focus();
-        });
+// Auto-init post feeds inserted after page load (e.g. nested child feeds inside loaded cards)
+new MutationObserver(mutations => {
+    for (const mutation of mutations) {
+        for (const node of mutation.addedNodes) {
+            if (node.nodeType !== Node.ELEMENT_NODE) continue;
+            if (node.classList.contains('post-feed')) initPostFeed(node);
+            node.querySelectorAll('.post-feed').forEach(initPostFeed);
+        }
     }
-}
+}).observe(document.body, { childList: true, subtree: true });
 
 export function initForums() {
-
-    // Post forms and reply forms
-    document.querySelectorAll('.post-form, .reply-form').forEach(form => {
-        initPostForm(form)
-    })
-
-    // Focus in first form
+    document.querySelectorAll('.post-feed').forEach(initPostFeed);
     document.querySelector('.post-form, .reply-form')?.querySelector('textarea')?.focus();
-
-    // Mute buttons
-    document.querySelectorAll('.post-mute-button').forEach(initMuteButton);
-
-
 }

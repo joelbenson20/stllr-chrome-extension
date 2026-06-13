@@ -21,8 +21,7 @@ export function initPages() {
     });
 
     // Feeds
-    document.querySelectorAll('.page-feed').forEach(feed => {
-        const feeder = feed.querySelector('.page-feeder');
+    const initFeed = (feeder) => {
         let loading = false;
         let intersecting = false;
 
@@ -35,17 +34,24 @@ export function initPages() {
             if (feeder.dataset.query) params.set('query', feeder.dataset.query);
             if (feeder.dataset.starredBy) params.set('starred_by', feeder.dataset.starredBy);
             if (feeder.dataset.nearTo) params.set('near_to', feeder.dataset.nearTo);
-            params.set('p', feeder.dataset.page);
-            fetch(feeder.dataset.endpoint + '?' + params.toString())
+            params.set('p', feeder.dataset.p);
+            fetch(new URL(feeder.dataset.endpoint, document.baseURI).href + '?' + params.toString())
                 .then(r => r.text())
                 .then(html => {
                     if (html === '') {
                         feeder.remove();
                     } else {
-                        feeder.insertAdjacentHTML('beforebegin', html);
-                        feeder.dataset.page = parseInt(feeder.dataset.page) + 1;
-                        loading = false;
-                        if (intersecting) loadMore();
+                        const tmp = document.createElement('div');
+                        tmp.innerHTML = html;
+                        const items = [...tmp.querySelectorAll('.page')];
+                        items.forEach((item, i) => {
+                            setTimeout(() => feeder.insertAdjacentElement('beforebegin', item), i * 80);
+                        });
+                        setTimeout(() => {
+                            feeder.dataset.p = parseInt(feeder.dataset.p) + 1;
+                            loading = false;
+                            if (intersecting) loadMore();
+                        }, items.length * 80);
                     }
                 })
                 .catch(() => {
@@ -65,6 +71,19 @@ export function initPages() {
             },
             { rootMargin: '300px' }
         ).observe(feeder);
-    });
+    };
+
+    document.querySelectorAll('.page-feeder').forEach(initFeed);
+
+    // Watch for feeders injected after initial load
+    new MutationObserver((mutations) => {
+        for (const mutation of mutations) {
+            for (const node of mutation.addedNodes) {
+                if (node.nodeType !== Node.ELEMENT_NODE) continue;
+                if (node.matches('.page-feeder')) initFeed(node);
+                node.querySelectorAll('.page-feeder').forEach(initFeed);
+            }
+        }
+    }).observe(document.body, { childList: true, subtree: true });
 
 }

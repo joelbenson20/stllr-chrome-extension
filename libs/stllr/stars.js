@@ -1,4 +1,4 @@
-export function initStarButtons() {
+export function initStars() {
     document.addEventListener('click', (e) => {
         const button = e.target.closest('.star-button');
         if (!button) return;

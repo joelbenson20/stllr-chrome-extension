@@ -1,9 +1,5 @@
 import { STLLR_URL, fetchView } from './client.js';
-import { initPages } from './libs/stllr/pages.js';
-import { initForums } from './libs/stllr/forums.js';
-import { initStarButtons } from './libs/stllr/stars.js';
 import { initRoom, closeRoomSocket } from './libs/stllr/rooms.js';
-import { initModals } from './libs/stllr/modals.js';
 
 
 let _loadingPromise = null; // Track loading status
@@ -34,7 +30,6 @@ export async function indexView() { // Defaults to forum view
     void document.body.offsetWidth;
     document.body.classList.add('fade-in');
     init();
-    initForums();
 }
 
 async function frameView() {
@@ -45,7 +40,6 @@ async function frameView() {
  async function forumView() {
     document.body.innerHTML = await fetchView('/extension/?tab=forum');
     init();
-    initForums();
  }
 
  async function roomView() {
@@ -93,11 +87,6 @@ function init() {
     document.querySelectorAll('[data-bs-toggle="popover"]').forEach(
     (el) => new bootstrap.Popover(el),
     );
-
-    // Initialize stllr elements
-    initPages();
-    initStarButtons();
-    initModals();
 
     // Initialize external links
     document.body.addEventListener('click', (e) => {
