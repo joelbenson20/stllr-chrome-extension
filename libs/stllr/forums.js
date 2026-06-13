@@ -1,11 +1,3 @@
-function initPostCardLink(card) {
-    card.addEventListener('click', e => {
-        if (!e.target.closest('a, button, form')) {
-            window.location.href = card.dataset.postUrl;
-        }
-    });
-}
-
 function initPostForm(form) {
     initFormSubmission(form);
     if (form.classList.contains('reply-form')) initReplyAutoFocus(form);
@@ -84,7 +76,7 @@ function initFormSubmission(form) {
             // Close form container for threaded posts
             if (parentId) {
                 document.querySelector(`#replyForm${parentId}`)?.classList.remove('show');
-                var replyCountSpan = document.querySelector(`#post${parentId} .children-count`);
+                var replyCountSpan = document.querySelector(`#post${parentId} .descendant-count`);
                 if (replyCountSpan) replyCountSpan.textContent = parseInt(replyCountSpan.textContent) + 1;
             }
 
@@ -152,7 +144,5 @@ export function initForums() {
     // Mute buttons
     document.querySelectorAll('.post-mute-button').forEach(initMuteButton);
 
-    // Post card links
-    document.querySelectorAll('.post[data-post-url]').forEach(initPostCardLink);
 
 }

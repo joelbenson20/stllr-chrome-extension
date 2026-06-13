@@ -54,8 +54,8 @@ async function frameView() {
     await initRoom();
  }
 
- async function similarView() {
-    document.body.innerHTML = await fetchView('/extension/?tab=similar');
+ async function nearbyView() {
+    document.body.innerHTML = await fetchView('/extension/?tab=nearby');
     init();
  }
 
@@ -78,9 +78,9 @@ function init() {
     roomTab?.addEventListener('click', async (e) => {
         roomView();
     })
-    const similarTab = document.getElementById('similarTab');
-    similarTab?.addEventListener('click', async (e) => {
-        similarView();
+    const nearbyTab = document.getElementById('nearbyTab');
+    nearbyTab?.addEventListener('click', async (e) => {
+        nearbyView();
     })
 
     // Initialize bootstrap elements
