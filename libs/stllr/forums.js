@@ -91,25 +91,18 @@ document.addEventListener('submit', (e) => {
     .then(data => {
         if (!data) return;
         const parentId = form.querySelector('[name=parent]').value;
-        const postTree = parentId
-            ? document.querySelector(`#children${parentId} .post-feed`)
-            : document.querySelector('.post-feed');
-        postTree.insertAdjacentHTML('afterbegin', data.post);
         if (parentId) {
+            const parentPost = document.querySelector(`#post${parentId}`);
+            parentPost.querySelector('.display-children').insertAdjacentHTML('afterbegin', data.post);
             bootstrap.Collapse.getOrCreateInstance(document.querySelector(`#replyForm${parentId}`)).hide();
-            const replyCountSpan = document.querySelector(`#post${parentId} .descendant-count`);
+            const replyCountSpan = parentPost.querySelector('.descendant-count');
             if (replyCountSpan) replyCountSpan.textContent = parseInt(replyCountSpan.textContent) + 1;
+        } else {
+            document.querySelector('.post-feed').insertAdjacentHTML('afterbegin', data.post);
         }
         form.reset();
     })
     .catch(error => console.error('Error:', error));
-});
-
-// When reply form opens, also show children so the new post lands visibly
-document.addEventListener('show.bs.collapse', (e) => {
-    if (!e.target.id.startsWith('replyForm')) return;
-    const postId = e.target.id.replace('replyForm', '');
-    bootstrap.Collapse.getOrCreateInstance(document.querySelector(`#children${postId}`)).show();
 });
 
 // Tracks last valid user-typed content (after the @mention prefix) per textarea
@@ -166,7 +159,10 @@ function initPostFeed(feed) {
                 } else {
                     const tmp = document.createElement('div');
                     tmp.innerHTML = html;
-                    const items = [...tmp.querySelectorAll('.post')];
+                    const displayChildren = feeder.closest('.collapse')?.closest('.post')?.querySelector('.display-children');
+                    const items = [...tmp.querySelectorAll('.post')].filter(item =>
+                        !displayChildren || !item.id || !displayChildren.querySelector(`#${item.id}`)
+                    );
                     items.forEach((item, i) => {
                         setTimeout(() => feeder.insertAdjacentElement('beforebegin', item), i * 80);
                     });
