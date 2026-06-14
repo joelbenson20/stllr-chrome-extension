@@ -1,3 +1,5 @@
+import { showAlert } from './alerts.js';
+
 // Markdown preview
 document.addEventListener('click', (e) => {
     const button = e.target.closest('.markdown-preview-button');
@@ -78,18 +80,27 @@ document.addEventListener('click', (e) => {
 });
 
 // Post form submission
-document.addEventListener('submit', (e) => {
+document.addEventListener('submit', async (e) => {
     const form = e.target.closest('.post-form, .reply-form');
     if (!form) return;
     e.preventDefault();
-    fetch(form.dataset.endpoint, {
-        method: 'POST',
-        headers: {'X-CSRFToken': form.querySelector('[name=csrfmiddlewaretoken]').value},
-        body: new FormData(form)
-    })
-    .then(response => response.ok ? response.json() : null)
-    .then(data => {
-        if (!data) return;
+    try {
+        const response = await fetch(form.dataset.endpoint, {
+            method: 'POST',
+            headers: {'X-CSRFToken': form.querySelector('[name=csrfmiddlewaretoken]').value},
+            body: new FormData(form)
+        });
+        if (!response.ok) {
+            let message = 'Something went wrong. Please try again.';
+            try {
+                const data = await response.json();
+                const first = Object.values(data.errors ?? {}).flat()[0];
+                if (first) message = first;
+            } catch {}
+            showAlert(message);
+            return;
+        }
+        const data = await response.json();
         const parentId = form.querySelector('[name=parent]').value;
         if (parentId) {
             const parentPost = document.querySelector(`#post${parentId}`);
@@ -101,8 +112,9 @@ document.addEventListener('submit', (e) => {
             document.querySelector('.post-feed').insertAdjacentHTML('afterbegin', data.post);
         }
         form.reset();
-    })
-    .catch(error => console.error('Error:', error));
+    } catch {
+        showAlert('Something went wrong. Please try again.');
+    }
 });
 
 // Tracks last valid user-typed content (after the @mention prefix) per textarea
