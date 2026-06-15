@@ -61,19 +61,23 @@ function init() {
     // Initalize tab buttons
     const frameTab = document.getElementById('frameTab');
     frameTab?.addEventListener('click', async (e) => {
+        e.preventDefault();
         frameView();
     })
 
     const forumTab = document.getElementById('forumTab');
     forumTab?.addEventListener('click', async (e) => {
+        e.preventDefault();
         forumView();
     })
     const roomTab = document.getElementById('roomTab');
     roomTab?.addEventListener('click', async (e) => {
+        e.preventDefault();
         roomView();
     })
     const nearbyTab = document.getElementById('nearbyTab');
     nearbyTab?.addEventListener('click', async (e) => {
+        e.preventDefault();
         nearbyView();
     })
 

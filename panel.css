@@ -6,6 +6,8 @@
 body {
     background-color: var(--night-sky);
     color: var(--star-light);
+    border-radius: 16px;
+    overflow: hidden;
 }
 
 .glow-expand {
