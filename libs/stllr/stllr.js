@@ -4,6 +4,6 @@ import { initForums } from './forums.js';
 import { initPages } from './pages.js';
 
 initModals();
-initPages();
 initStars();
+initPages();
 initForums();

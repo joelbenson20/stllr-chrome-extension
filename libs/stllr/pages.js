@@ -1,5 +1,16 @@
 export function initPages() {
 
+    // Copy URL buttons
+    document.addEventListener('click', (e) => {
+        const btn = e.target.closest('.copy-url-btn');
+        if (!btn) return;
+        navigator.clipboard.writeText(btn.dataset.url).then(() => {
+            const icon = btn.querySelector('i');
+            icon.className = 'bi bi-check-lg';
+            setTimeout(() => { icon.className = 'bi bi-link-45deg'; }, 1500);
+        }).catch(err => console.error('Copy failed:', err));
+    });
+
     // Pin Buttons
     document.addEventListener('click', (e) => {
         const button = e.target.closest('.page-pin-button');
@@ -32,8 +43,11 @@ export function initPages() {
             if (feeder.dataset.sort) params.set('sort', feeder.dataset.sort);
             if (feeder.dataset.seed) params.set('seed', feeder.dataset.seed);
             if (feeder.dataset.query) params.set('query', feeder.dataset.query);
-            if (feeder.dataset.starredBy) params.set('starred_by', feeder.dataset.starredBy);
-            if (feeder.dataset.nearTo) params.set('near_to', feeder.dataset.nearTo);
+            if (feeder.dataset.starredByUserId) params.set('starred_by_user_id', feeder.dataset.starredByUserId);
+            if (feeder.dataset.starredByCrewId) params.set('starred_by_crew_id', feeder.dataset.starredByCrewId);
+            if (feeder.dataset.beaconedByCrewId) params.set('beaconed_by_crew_id', feeder.dataset.beaconedByCrewId);
+            if (feeder.dataset.beaconedToUserId) params.set('beaconed_to_user_id', feeder.dataset.beaconedToUserId);
+            if (feeder.dataset.nearPageId) params.set('near_to', feeder.dataset.nearPageId);
             params.set('p', feeder.dataset.p);
             fetch(new URL(feeder.dataset.endpoint, document.baseURI).href + '?' + params.toString())
                 .then(r => r.text())

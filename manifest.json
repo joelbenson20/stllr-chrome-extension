@@ -1,7 +1,7 @@
 {
     "manifest_version": 3,
     "name": "stllr",
-    "version": "2.0",
+    "version": "3.0",
     "description": "the universal forum",
     "side_panel": {
         "default_title": "stllr",
@@ -27,8 +27,7 @@
         "storage"
     ],
     "host_permissions": [
-        "https://stllr.io/*",
-        "http://127.0.0.1:8000/*"
+        "https://stllr.io/*"
     ],
     "icons": {
         "16": "icons/icon16.png",

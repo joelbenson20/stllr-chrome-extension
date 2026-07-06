@@ -149,6 +149,74 @@ document.addEventListener('input', (e) => {
     }
 });
 
+// Mention autocomplete
+let mentionDropdown = null;
+let mentionTextarea = null;
+let mentionDebounce = null;
+
+function getMentionQuery(textarea) {
+    const before = textarea.value.slice(0, textarea.selectionStart);
+    const match = before.match(/@(\w+)$/);
+    return match ? match[1] : null;
+}
+
+function dismissMentionDropdown() {
+    mentionDropdown?.remove();
+    mentionDropdown = null;
+    mentionTextarea = null;
+}
+
+document.addEventListener('input', (e) => {
+    const textarea = e.target.closest('.post-form textarea, .reply-form textarea');
+    if (!textarea) return;
+    clearTimeout(mentionDebounce);
+    const query = getMentionQuery(textarea);
+    if (!query) { dismissMentionDropdown(); return; }
+    mentionDebounce = setTimeout(() => {
+        const endpoint = textarea.closest('form').dataset.mentionEndpoint;
+        fetch(endpoint + '?q=' + encodeURIComponent(query))
+            .then(r => r.json())
+            .then(results => {
+                dismissMentionDropdown();
+                if (!results.length) return;
+                mentionTextarea = textarea;
+                const rect = textarea.getBoundingClientRect();
+                const menu = document.createElement('div');
+                menu.className = 'dropdown-menu show shadow';
+                menu.style.cssText = `position:fixed;top:${rect.bottom}px;left:${rect.left}px;min-width:200px;z-index:1055`;
+                results.forEach(result => {
+                    const btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.className = 'dropdown-item';
+                    btn.textContent = result.type === 'crew'
+                        ? `@${result.handle} — ${result.name}`
+                        : `@${result.handle}`;
+                    btn.addEventListener('mousedown', ev => {
+                        ev.preventDefault();
+                        const val = textarea.value;
+                        const cursor = textarea.selectionStart;
+                        const before = val.slice(0, cursor).replace(/@(\w+)$/, `@${result.handle} `);
+                        textarea.value = before + val.slice(cursor);
+                        textarea.setSelectionRange(before.length, before.length);
+                        dismissMentionDropdown();
+                    });
+                    menu.appendChild(btn);
+                });
+                document.body.appendChild(menu);
+                mentionDropdown = menu;
+            })
+            .catch(() => dismissMentionDropdown());
+    }, 200);
+});
+
+document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && mentionDropdown) dismissMentionDropdown();
+});
+
+document.addEventListener('click', e => {
+    if (mentionDropdown && !mentionDropdown.contains(e.target)) dismissMentionDropdown();
+});
+
 // Post feed
 function initPostFeed(feed) {
     const feeder = feed.querySelector('.post-feeder');
@@ -159,8 +227,12 @@ function initPostFeed(feed) {
         if (loading) return;
         loading = true;
         const params = new URLSearchParams();
-        params.set('page_id', feeder.dataset.pageId);
+        if (feeder.dataset.pageId) params.set('page_id', feeder.dataset.pageId);
         if (feeder.dataset.parentId) params.set('parent_id', feeder.dataset.parentId);
+        if (feeder.dataset.authorId) params.set('author_id', feeder.dataset.authorId);
+        if (feeder.dataset.mentionedUserId) params.set('mentioned_user_id', feeder.dataset.mentionedUserId);
+        if (feeder.dataset.mentionedCrewId) params.set('mentioned_crew_id', feeder.dataset.mentionedCrewId);
+        if (feeder.dataset.repliesOnly) params.set('replies_only', feeder.dataset.repliesOnly);
         params.set('seed', feeder.dataset.seed);
         params.set('p', feeder.dataset.p);
         fetch(feeder.dataset.endpoint + '?' + params.toString())
