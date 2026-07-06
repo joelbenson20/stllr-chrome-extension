@@ -1,8 +1,5 @@
 import { STLLR_URL, fetchView } from './client.js';
-import { initPages } from './libs/stllr/pages.js';
-import { initForums } from './libs/stllr/forums.js';
 import { initRoom, closeRoomSocket } from './libs/stllr/rooms.js';
-import { initModals } from './libs/stllr/modals.js';
 
 
 let _loadingPromise = null; // Track loading status
@@ -27,19 +24,22 @@ export async function restrictedView() {
     document.body.innerHTML = await fetchView('/extension/restricted/');
 }
 
-export async function indexView() {
+export async function indexView() { // Defaults to forum view
     document.body.innerHTML = await fetchView('/extension/');
     document.body.classList.remove('fade-in');
     void document.body.offsetWidth;
     document.body.classList.add('fade-in');
     init();
-    initForums(); // Defaults to forum
+}
+
+async function frameView() {
+    document.body.innerHTML = await fetchView('/extension/?tab=frame');
+    init();
 }
 
  async function forumView() {
     document.body.innerHTML = await fetchView('/extension/?tab=forum');
     init();
-    initForums();
  }
 
  async function roomView() {
@@ -48,8 +48,8 @@ export async function indexView() {
     await initRoom();
  }
 
- async function similarView() {
-    document.body.innerHTML = await fetchView('/extension/?tab=similar');
+ async function nearbyView() {
+    document.body.innerHTML = await fetchView('/extension/?tab=nearby');
     init();
  }
 
@@ -59,17 +59,26 @@ function init() {
     closeRoomSocket();
 
     // Initalize tab buttons
+    const frameTab = document.getElementById('frameTab');
+    frameTab?.addEventListener('click', async (e) => {
+        e.preventDefault();
+        frameView();
+    })
+
     const forumTab = document.getElementById('forumTab');
     forumTab?.addEventListener('click', async (e) => {
+        e.preventDefault();
         forumView();
     })
     const roomTab = document.getElementById('roomTab');
     roomTab?.addEventListener('click', async (e) => {
+        e.preventDefault();
         roomView();
     })
-    const similarTab = document.getElementById('similarTab');
-    similarTab?.addEventListener('click', async (e) => {
-        similarView();
+    const nearbyTab = document.getElementById('nearbyTab');
+    nearbyTab?.addEventListener('click', async (e) => {
+        e.preventDefault();
+        nearbyView();
     })
 
     // Initialize bootstrap elements
@@ -79,10 +88,9 @@ function init() {
     const tooltipList = [...tooltipTriggerList].map(
         (tooltipTriggerEl) => new bootstrap.Tooltip(tooltipTriggerEl),
     );
-
-    // Initialize stllr elements
-    initPages();
-    initModals();
+    document.querySelectorAll('[data-bs-toggle="popover"]').forEach(
+    (el) => new bootstrap.Popover(el),
+    );
 
     // Initialize external links
     document.body.addEventListener('click', (e) => {
